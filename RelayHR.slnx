@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RelayHR.Web/RelayHR.Web.csproj" />
+  </Folder>
+</Solution>
