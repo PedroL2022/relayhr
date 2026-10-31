@@ -1,7 +1,9 @@
+using RelayHR.Web.Services.ServiceRequests;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddServiceRequestModule(builder.Configuration);
 
 var app = builder.Build();
 
