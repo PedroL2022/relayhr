@@ -1,0 +1,12 @@
+using RelayHR.Web.DTOs.KnowledgeTransfer;
+
+namespace RelayHR.Web.Services.KnowledgeTransfer;
+
+public interface IKnowledgeTransferService
+{
+    Task<OperationResult<KnowledgeTransferProjectResponseDTO>> CreateProjectAsync(
+        int employeeExitId, CreateKnowledgeTransferProjectDTO dto, CancellationToken cancellationToken = default);
+
+    Task<OperationResult<KnowledgeTransferTaskResponseDTO>> CreateTaskAsync(
+        int employeeExitId, CreateKnowledgeTransferTaskDTO dto, CancellationToken cancellationToken = default);
+}
