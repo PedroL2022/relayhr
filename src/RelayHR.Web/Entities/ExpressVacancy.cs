@@ -15,7 +15,8 @@ public class ExpressVacancy
         public const string JobDescription = nameof(JobDescription);
         public const string Requirements = nameof(Requirements);
     }
-
+    
+    public const string ToComplete = "ToComplete";
     public int ExpressVacancyId { get; set; }
 
     // Salida que originó la vacante (obligatoria y única).
@@ -69,24 +70,40 @@ public class ExpressVacancy
         };
 
         vacancy.MissingFields = vacancy.CalculateMissingFields();
+        vacancy.MarkMissingFieldsAsToComplete();
         return vacancy;
     }
 
-    /// <summary>
+      /// <summary>
     /// Devuelve la lista de campos del perfil que siguen sin información.
+    /// Un texto con el marcador ToComplete cuenta como pendiente.
     /// Sirve también para recalcular la lista cuando RRHH completa datos.
     /// </summary>
     public List<string> CalculateMissingFields()
     {
         var missing = new List<string>();
 
-        if (string.IsNullOrWhiteSpace(JobTitle)) missing.Add(Fields.JobTitle);
+        if (IsEmpty(JobTitle)) missing.Add(Fields.JobTitle);
         if (DepartmentId is null) missing.Add(Fields.DepartmentId);
-        if (string.IsNullOrWhiteSpace(JobDescription)) missing.Add(Fields.JobDescription);
-        if (string.IsNullOrWhiteSpace(Requirements)) missing.Add(Fields.Requirements);
+        if (IsEmpty(JobDescription)) missing.Add(Fields.JobDescription);
+        if (IsEmpty(Requirements)) missing.Add(Fields.Requirements);
 
         return missing;
     }
+
+    /// <summary>
+    /// Escribe el marcador ToComplete en los campos de texto que están pendientes.
+    /// El departamento es numérico, así que se queda en null y se identifica en MissingFields.
+    /// </summary>
+    public void MarkMissingFieldsAsToComplete()
+    {
+        if (MissingFields.Contains(Fields.JobTitle)) JobTitle = ToComplete;
+        if (MissingFields.Contains(Fields.JobDescription)) JobDescription = ToComplete;
+        if (MissingFields.Contains(Fields.Requirements)) Requirements = ToComplete;
+    }
+
+    private static bool IsEmpty(string? value) =>
+        string.IsNullOrWhiteSpace(value) || value == ToComplete;
 
     // Convierte textos vacíos o con solo espacios en null para tratarlos como "sin información".
     private static string? Clean(string? value) =>
