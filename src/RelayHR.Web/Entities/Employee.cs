@@ -1,17 +1,10 @@
 namespace RelayHR.Web.Entities;
 
-/// <summary>
-/// Empleado de la organización.
-/// </summary>
 public class Employee
 {
-    public int EmployeeId { get; set; }
+    public int Id { get; set; }
 
-    public string FullName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
-    public int? PositionId { get; set; }
-    public Position? Position { get; set; }
-
-    public int? DepartmentId { get; set; }
-    public Department? Department { get; set; }
+    public ICollection<EmployeeExit> Exits { get; set; } = new List<EmployeeExit>();
 }

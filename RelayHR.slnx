@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/RelayHR.Web/RelayHR.Web.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RelayHR.Web.Tests/RelayHR.Web.Tests.csproj" />
+  </Folder>
 </Solution>
