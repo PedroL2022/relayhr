@@ -1,0 +1,23 @@
+using Microsoft.EntityFrameworkCore;
+using RelayHR.Web.Entities;
+
+namespace RelayHR.Web.Data;
+
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<Position> Positions => Set<Position>();
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<EmployeeExit> EmployeeExits => Set<EmployeeExit>();
+    public DbSet<ExpressVacancy> ExpressVacancies => Set<ExpressVacancy>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Carga todas las clases IEntityTypeConfiguration de la carpeta Data/Configurations.
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
+}
