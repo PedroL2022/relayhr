@@ -107,7 +107,8 @@ public sealed class ExitChecklistService(
                     assignment.ResponsibleUserKey],
                 Title = template.Title,
                 DueDate = dueDate,
-                Status = ChecklistTaskStatus.Pending
+                Status = ChecklistTaskStatus.Pending,
+                IsRequired = template.IsRequired // SCRUM-22: obligatoria u opcional según la plantilla
             });
         }
 

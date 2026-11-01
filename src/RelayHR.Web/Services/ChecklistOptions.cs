@@ -26,4 +26,10 @@ public sealed class ChecklistTaskTemplate
 
     /// <summary>Días antes de la fecha efectiva; cero vence en la fecha efectiva.</summary>
     public int DaysBeforeEffectiveDate { get; set; }
+
+    /// <summary>
+    /// Obligatoria (true) u opcional (false). Si la plantilla no lo indica,
+    /// la tarea se considera obligatoria para no dejar pasar un cierre por omisión.
+    /// </summary>
+    public bool IsRequired { get; set; } = true;
 }
