@@ -1,0 +1,3 @@
+@model RelayHR.Web.Dtos.PublicVacancyDTO
+@{ ViewData["Title"] = Model.JobTitle; }
+<article class="panel vacancy-panel"><p class="eyebrow">OPORTUNIDAD LABORAL</p><h1>@Model.JobTitle</h1><p>@Model.Department</p><p>Publicada: <time datetime="@Model.PublishedAt.ToString("O")">@Model.PublishedAt.ToString("dd/MM/yyyy HH:mm") UTC</time></p><h2>Descripción del puesto</h2><p class="vacancy-text">@Model.JobDescription</p><h2>Requisitos</h2><p class="vacancy-text">@Model.Requirements</p></article>

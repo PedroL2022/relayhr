@@ -1,0 +1,10 @@
+@{ ViewData["Title"] = "Vacantes Express"; }
+<section class="page-heading"><div><p class="eyebrow">RECLUTAMIENTO</p><h1>Vacantes Express</h1><p>Revisa los campos pendientes y prepara la publicación.</p></div></section>
+<section class="panel vacancy-panel" id="vacancy-list">
+ <label for="status-filter">Estado</label>
+ <select id="status-filter" class="form-select"><option value="">Todos</option><option value="1" selected>Pendientes de revisión</option><option value="5">Publicadas</option><option value="2">En revisión</option><option value="3">Aprobadas</option><option value="4">Descartadas</option></select>
+ <div id="vacancy-message" class="notice" role="status" aria-live="polite" hidden></div>
+ <div class="table-responsive"><table class="table"><thead><tr><th>ID</th><th>Cargo</th><th>Departamento</th><th>Estado</th><th>Creación</th><th>Pendientes</th><th>Publicación</th><th>Acción</th></tr></thead><tbody id="vacancy-rows"></tbody></table></div>
+ <div class="vacancy-actions"><button id="previous-page" class="button button-secondary">Anterior</button><span id="page-label" aria-live="polite"></span><button id="next-page" class="button button-secondary">Siguiente</button></div>
+</section>
+@section Scripts { <script src="~/js/vacancies.js" asp-append-version="true"></script> }

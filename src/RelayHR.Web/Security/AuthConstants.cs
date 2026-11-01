@@ -12,5 +12,6 @@ public static class Roles
 public static class Policies
 {
     // Solo reclutadores y administradores de RRHH pueden consultar las vacantes.
+    public const string PublishVacancy = "PublishVacancy";
     public const string RecruiterAccess = "RecruiterAccess";
 }

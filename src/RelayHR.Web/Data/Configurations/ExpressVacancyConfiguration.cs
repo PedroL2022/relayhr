@@ -15,10 +15,14 @@ public class ExpressVacancyConfiguration : IEntityTypeConfiguration<ExpressVacan
             // Solo se aceptan los estados definidos en el enum ExpressVacancyStatus.
             t.HasCheckConstraint(
                 "CK_ExpressVacancies_Status",
-                "[Status] IN ('PendingReview', 'InReview', 'Approved', 'Discarded')");
+                "[Status] IN ('PendingReview', 'InReview', 'Approved', 'Discarded', 'Published')");
         });
 
         builder.HasKey(v => v.ExpressVacancyId);
+        builder.Property(v => v.Revision).IsConcurrencyToken();
+        builder.HasOne<User>().WithMany().HasForeignKey(v => v.UpdatedByUserId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<User>().WithMany().HasForeignKey(v => v.PublishedByUserId).OnDelete(DeleteBehavior.Restrict);
+
 
         // Copia de los datos del puesto: todos opcionales para que la falta de
         // información no impida crear la vacante.
@@ -45,7 +49,7 @@ public class ExpressVacancyConfiguration : IEntityTypeConfiguration<ExpressVacan
 
         builder.Property(v => v.MissingFields)
             .IsRequired()
-            .HasColumnType("nvarchar(max)")
+
             .HasConversion(
                 list => JsonSerializer.Serialize(list, (JsonSerializerOptions?)null),
                 json => JsonSerializer.Deserialize<List<string>>(json, (JsonSerializerOptions?)null) ?? new List<string>(),

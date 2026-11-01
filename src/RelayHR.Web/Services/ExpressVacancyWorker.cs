@@ -38,7 +38,7 @@ public class ExpressVacancyWorker : BackgroundService
             {
                 await RunCycleAsync(stoppingToken);
             }
-            while (await timer.WaitNextTickAsync(stoppingToken));
+            while (await timer.WaitForNextTickAsync(stoppingToken));
         }
         catch (OperationCanceledException)
         {

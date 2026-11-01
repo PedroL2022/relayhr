@@ -45,6 +45,13 @@ public class ExpressVacancy
     public List<string> MissingFields { get; set; } = new();
 
     public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public int? UpdatedByUserId { get; set; }
+    public DateTime? PublishedAt { get; set; }
+    public int? PublishedByUserId { get; set; }
+    // Token portable a SQL Server y SQLite; cada escritura genera una revisión nueva.
+    public Guid Revision { get; set; }
+
 
     /// <summary>
     /// Genera una vacante a partir de una salida, copiando los datos del puesto
@@ -59,7 +66,7 @@ public class ExpressVacancy
 
         var vacancy = new ExpressVacancy
         {
-            EmployeeExitId = employeeExit.EmployeeExitId,
+            EmployeeExitId = employeeExit.Id,
             EmployeeExit = employeeExit,
             PositionId = position?.PositionId,
             Position = position,
@@ -106,7 +113,7 @@ public class ExpressVacancy
     }
 
     private static bool IsEmpty(string? value) =>
-        string.IsNullOrWhiteSpace(value) || value == ToComplete;
+        string.IsNullOrWhiteSpace(value) || string.Equals(value.Trim(), ToComplete, StringComparison.OrdinalIgnoreCase);
 
     // Convierte textos vacíos o con solo espacios en null para tratarlos como "sin información".
     private static string? Clean(string? value) =>

@@ -6,9 +6,14 @@ using RelayHR.Web.Services;
 
 namespace RelayHR.Web.Data;
 
-public class RelayHrDbContext(DbContextOptions<RelayHrDbContext> options)
-    : IdentityDbContext<User, IdentityRole<int>, int>(options)
+public class RelayHrDbContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
+    public RelayHrDbContext(DbContextOptions<RelayHrDbContext> options) : base(options) { }
+    protected RelayHrDbContext(DbContextOptions options) : base(options) { }
+    public DbSet<Position> Positions => Set<Position>();
+    public DbSet<ExpressVacancy> ExpressVacancies => Set<ExpressVacancy>();
+    public DbSet<ExpressVacancyRequest> ExpressVacancyRequests => Set<ExpressVacancyRequest>();
+
     public DbSet<Employee> Employees => Set<Employee>();
 
     public DbSet<Department> Departments => Set<Department>();
@@ -22,6 +27,10 @@ public class RelayHrDbContext(DbContextOptions<RelayHrDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new Configurations.EmployeeConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.PositionConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.ExpressVacancyConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.ExpressVacancyRequestConfiguration());
         var isSqlite = Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite";
 
         modelBuilder.Entity<Employee>(entity =>

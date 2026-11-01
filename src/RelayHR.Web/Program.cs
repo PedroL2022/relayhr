@@ -1,3 +1,9 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using RelayHR.Web.Repository;
+using RelayHR.Web.Security;
+using RelayHR.Web.Data.Interceptors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RelayHR.Web.Data;
@@ -21,8 +27,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
-builder.Services.AddDbContext<RelayHrDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<RelayHrDbContext>((sp, options) =>
+    options.UseSqlServer(sp.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection"))
+        .AddInterceptors(sp.GetRequiredService<ExpressVacancyRequestInterceptor>()));
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     {
         options.User.RequireUniqueEmail = true;
@@ -80,44 +87,37 @@ builder.Services.AddScoped<IExpressVacancyService, ExpressVacancyService>();
 builder.Services.AddSingleton<IExpressVacancyRequestProcessor, ExpressVacancyRequestProcessor>();
 builder.Services.AddHostedService<ExpressVacancyWorker>();
 
-// Autenticación con JWT: la API valida los tokens; quien los emite es el sistema de login.
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer();
-
-builder.Services
-    .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+// MVC conserva Identity.Application; JWT no cambia el esquema predeterminado.
+// La configuración se resuelve al utilizar el handler, también en pruebas de integración.
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
     .Configure<IConfiguration>((options, configuration) =>
     {
         var key = configuration["Jwt:Key"];
-        if (string.IsNullOrWhiteSpace(key) || key.Length < 32)
-        {
-            throw new InvalidOperationException(
-                "Falta 'Jwt:Key' (mínimo 32 caracteres). En desarrollo se define en appsettings.Development.json; en producción use una variable de entorno o un gestor de secretos.");
-        }
-
-        // Los claims se leen tal como vienen en el token ("role", "name").
         options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidIssuer = configuration["Jwt:Issuer"],
-            ValidateAudience = true,
-            ValidAudience = configuration["Jwt:Audience"],
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1),
-            RoleClaimType = "role",
-            NameClaimType = "name"
+            ValidateIssuer = true, ValidIssuer = configuration["Jwt:Issuer"],
+            ValidateAudience = true, ValidAudience = configuration["Jwt:Audience"],
+            ValidateIssuerSigningKey = true, RequireSignedTokens = true,
+            // Sin clave válida el bearer falla cerrado; las cookies siguen funcionando.
+            IssuerSigningKey = !string.IsNullOrWhiteSpace(key) && key.Length >= 32
+                ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)) : null,
+            ValidateLifetime = true, ClockSkew = TimeSpan.FromMinutes(1),
+            RoleClaimType = "role", NameClaimType = "name"
         };
     });
-
-// Solo reclutadores y administradores de RRHH acceden a la bandeja.
+var vacancySchemes = new[] { IdentityConstants.ApplicationScheme, JwtBearerDefaults.AuthenticationScheme };
+builder.Services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
+builder.Services.AddScoped<ExpressVacancyPublicationService>();
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy(Policies.RecruiterAccess, policy =>
-        policy.RequireRole(Roles.Recruiter, Roles.HRAdmin));
+    options.AddPolicy(Policies.RecruiterAccess, policy => policy
+        .AddAuthenticationSchemes(vacancySchemes.ToArray()).RequireAuthenticatedUser()
+        .RequireRole(Roles.Recruiter, Roles.HRAdmin, IdentityRoles.HumanResources));
+    options.AddPolicy(Policies.PublishVacancy, policy => policy
+        .AddAuthenticationSchemes(vacancySchemes.ToArray()).RequireAuthenticatedUser()
+        .RequireRole(Roles.HRAdmin, IdentityRoles.HumanResources));
 });
 
 var app = builder.Build();

@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using RelayHR.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,13 +18,41 @@ namespace RelayHR.Web.Controllers;
 [Authorize(Policy = Policies.RecruiterAccess)]
 public class ExpressVacanciesController : ControllerBase
 {
+    [HttpPut("{id:int}")]
+    [VacancyAntiforgery]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateExpressVacancyDTO dto, CancellationToken ct)
+    {
+        if (!TryUserId(out var userId)) return Unauthorized(ApiResponse<object>.Fail("Identidad no válida."));
+        var result = await _publication.UpdateAsync(id, userId, dto, ct);
+        return StatusCode(result.StatusCode, result.Body);
+    }
+
+    [HttpPost("{id:int}/publish")]
+    [Authorize(Policy = Policies.PublishVacancy)]
+    [VacancyAntiforgery]
+    public async Task<IActionResult> Publish(int id, CancellationToken ct)
+    {
+        if (!TryUserId(out var userId)) return Unauthorized(ApiResponse<object>.Fail("Identidad no válida."));
+        var result = await _publication.PublishAsync(id, userId, ct);
+        return StatusCode(result.StatusCode, result.Body);
+    }
+
+    [HttpGet("departments")]
+    public async Task<IActionResult> Departments(CancellationToken ct) => Ok(await _db.Departments
+        .AsNoTracking().OrderBy(d => d.Name).Select(d => new { d.Id, d.Name }).ToListAsync(ct));
+
+    private bool TryUserId(out int userId) => int.TryParse(
+        User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"), out userId) && userId > 0;
+
     private const int MaxPageSize = 100;
 
     private readonly AppDbContext _db;
+    private readonly ExpressVacancyPublicationService _publication;
 
-    public ExpressVacanciesController(AppDbContext db)
+    public ExpressVacanciesController(AppDbContext db, ExpressVacancyPublicationService publication)
     {
         _db = db;
+        _publication = publication;
     }
 
     /// <summary>
@@ -49,7 +79,7 @@ public class ExpressVacanciesController : ControllerBase
         // Solo lectura: AsNoTracking para no modificar ni rastrear los registros.
         var query = _db.ExpressVacancies
             .AsNoTracking()
-            .Include(v => v.Department)
+            .Include(v => v.Department).Include(v => v.EmployeeExit)
             .AsQueryable();
 
         if (status.HasValue)
@@ -87,7 +117,7 @@ public class ExpressVacanciesController : ControllerBase
     {
         var vacancy = await _db.ExpressVacancies
             .AsNoTracking()
-            .Include(v => v.Department)
+            .Include(v => v.Department).Include(v => v.EmployeeExit)
             .FirstOrDefaultAsync(v => v.ExpressVacancyId == id, cancellationToken);
 
         if (vacancy is null)

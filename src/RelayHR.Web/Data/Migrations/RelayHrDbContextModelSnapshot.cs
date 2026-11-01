@@ -273,12 +273,22 @@ namespace RelayHR.Web.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<int?>("PositionId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("PositionId");
 
                     b.ToTable("Employees", (string)null);
                 });
@@ -351,6 +361,174 @@ namespace RelayHR.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("ExitChecklists", (string)null);
+                });
+
+            modelBuilder.Entity("RelayHR.Web.Entities.ExpressVacancy", b =>
+                {
+                    b.Property<int>("ExpressVacancyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExpressVacancyId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeExitId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("JobDescription")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("JobTitle")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("MissingFields")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("PositionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("PublishedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Requirements")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("PendingReview");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ExpressVacancyId");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("EmployeeExitId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ExpressVacancies_EmployeeExitId");
+
+                    b.HasIndex("PositionId");
+
+                    b.HasIndex("PublishedByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("ExpressVacancies", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ExpressVacancies_Status", "[Status] IN ('PendingReview', 'InReview', 'Approved', 'Discarded', 'Published')");
+                        });
+                });
+
+            modelBuilder.Entity("RelayHR.Web.Entities.ExpressVacancyRequest", b =>
+                {
+                    b.Property<int>("ExpressVacancyRequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExpressVacancyRequestId"));
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeExitId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastAttemptAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("LockedUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("NextAttemptAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("ProcessingMilliseconds")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("ExpressVacancyRequestId");
+
+                    b.HasIndex("EmployeeExitId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ExpressVacancyRequests_EmployeeExitId");
+
+                    b.HasIndex("Status", "NextAttemptAt")
+                        .HasDatabaseName("IX_ExpressVacancyRequests_Status_NextAttemptAt");
+
+                    b.ToTable("ExpressVacancyRequests", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ExpressVacancyRequests_Status", "[Status] IN ('Pending', 'Processing', 'Completed', 'Failed')");
+                        });
+                });
+
+            modelBuilder.Entity("RelayHR.Web.Entities.Position", b =>
+                {
+                    b.Property<int>("PositionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PositionId"));
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Requirements")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("PositionId");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.ToTable("Positions", (string)null);
                 });
 
             modelBuilder.Entity("RelayHR.Web.Entities.User", b =>
@@ -511,6 +689,23 @@ namespace RelayHR.Web.Data.Migrations
                     b.Navigation("ResponsibleUser");
                 });
 
+            modelBuilder.Entity("RelayHR.Web.Entities.Employee", b =>
+                {
+                    b.HasOne("RelayHR.Web.Entities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RelayHR.Web.Entities.Position", "Position")
+                        .WithMany()
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Position");
+                });
+
             modelBuilder.Entity("RelayHR.Web.Entities.EmployeeExit", b =>
                 {
                     b.HasOne("RelayHR.Web.Entities.User", "ClosedByUser")
@@ -540,6 +735,62 @@ namespace RelayHR.Web.Data.Migrations
                     b.Navigation("EmployeeExit");
                 });
 
+            modelBuilder.Entity("RelayHR.Web.Entities.ExpressVacancy", b =>
+                {
+                    b.HasOne("RelayHR.Web.Entities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RelayHR.Web.Entities.EmployeeExit", "EmployeeExit")
+                        .WithOne("ExpressVacancy")
+                        .HasForeignKey("RelayHR.Web.Entities.ExpressVacancy", "EmployeeExitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RelayHR.Web.Entities.Position", "Position")
+                        .WithMany()
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RelayHR.Web.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("PublishedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RelayHR.Web.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Department");
+
+                    b.Navigation("EmployeeExit");
+
+                    b.Navigation("Position");
+                });
+
+            modelBuilder.Entity("RelayHR.Web.Entities.ExpressVacancyRequest", b =>
+                {
+                    b.HasOne("RelayHR.Web.Entities.EmployeeExit", "EmployeeExit")
+                        .WithOne()
+                        .HasForeignKey("RelayHR.Web.Entities.ExpressVacancyRequest", "EmployeeExitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("EmployeeExit");
+                });
+
+            modelBuilder.Entity("RelayHR.Web.Entities.Position", b =>
+                {
+                    b.HasOne("RelayHR.Web.Entities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Department");
+                });
+
             modelBuilder.Entity("RelayHR.Web.Entities.Department", b =>
                 {
                     b.Navigation("ChecklistTasks");
@@ -554,6 +805,8 @@ namespace RelayHR.Web.Data.Migrations
                 {
                     b.Navigation("Checklist")
                         .IsRequired();
+
+                    b.Navigation("ExpressVacancy");
                 });
 
             modelBuilder.Entity("RelayHR.Web.Entities.ExitChecklist", b =>

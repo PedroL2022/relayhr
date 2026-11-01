@@ -1,24 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using RelayHR.Web.Entities;
-
 namespace RelayHR.Web.Data;
-
-public class AppDbContext : DbContext
-{
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
-    public DbSet<Department> Departments => Set<Department>();
-    public DbSet<Position> Positions => Set<Position>();
-    public DbSet<Employee> Employees => Set<Employee>();
-    public DbSet<EmployeeExit> EmployeeExits => Set<EmployeeExit>();
-    public DbSet<ExpressVacancy> ExpressVacancies => Set<ExpressVacancy>();
-    public DbSet<ExpressVacancyRequest> ExpressVacancyRequests => Set<ExpressVacancyRequest>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        // Carga todas las clases IEntityTypeConfiguration de la carpeta Data/Configurations.
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-    }
-}
+// HU-04 conserva su contrato de contexto, compartiendo el modelo canónico de salidas/Identity.
+// Las nuevas migraciones de este flujo pertenecen a RelayHrDbContext.
+public class AppDbContext(DbContextOptions<AppDbContext> options) : RelayHrDbContext(options);

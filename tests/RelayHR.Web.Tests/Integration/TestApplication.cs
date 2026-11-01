@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using RelayHR.Web.Data.Interceptors;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -36,11 +40,11 @@ internal sealed class TestApplication : IAsyncDisposable
 
     public WebApplicationFactory<Program> Factory => _factory;
 
-    public static async Task<TestApplication> StartAsync(bool failChecklistGeneration = false)
+    public static async Task<TestApplication> StartAsync(bool failChecklistGeneration = false, bool enableJwt = false)
     {
         var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
-        var factory = new TestWebApplicationFactory(connection, failChecklistGeneration);
+        var factory = new TestWebApplicationFactory(connection, failChecklistGeneration, enableJwt);
         var application = new TestApplication(connection, factory);
 
         try
@@ -135,13 +139,16 @@ internal sealed class TestApplication : IAsyncDisposable
 
     private sealed class TestWebApplicationFactory(
         SqliteConnection connection,
-        bool failChecklistGeneration) : WebApplicationFactory<Program>
+        bool failChecklistGeneration, bool enableJwt) : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.ConfigureLogging(logging => logging.ClearProviders());
             builder.ConfigureAppConfiguration((_, configuration) =>
                 configuration.AddInMemoryCollection(new Dictionary<string, string?>
                 {
+                    ["Jwt:Key"] = enableJwt ? "HU05-test-only-signing-key-at-least-32-characters" : null,
+                    ["Jwt:Issuer"] = "relayhr-tests", ["Jwt:Audience"] = "relayhr-tests",
                     ["Checklist:ResponsibleUserIds:Technology"] = "101",
                     ["Checklist:ResponsibleUserIds:HumanResources"] = "102",
                     ["Checklist:ResponsibleUserIds:Finance"] = "103"
@@ -152,7 +159,15 @@ internal sealed class TestApplication : IAsyncDisposable
                 services.RemoveAll<IDbContextOptionsConfiguration<RelayHrDbContext>>();
                 services.RemoveAll<DbContextOptions<RelayHrDbContext>>();
                 services.RemoveAll<RelayHrDbContext>();
-                services.AddDbContext<RelayHrDbContext>(options => options.UseSqlite(connection));
+                services.AddDataProtection().UseEphemeralDataProtectionProvider();
+                services.AddDbContext<RelayHrDbContext>((sp, options) => options.UseSqlite(connection)
+                    .AddInterceptors(sp.GetRequiredService<ExpressVacancyRequestInterceptor>()));
+                services.RemoveAll<IDbContextOptionsConfiguration<AppDbContext>>();
+                services.RemoveAll<DbContextOptions<AppDbContext>>();
+                services.RemoveAll<AppDbContext>();
+                services.AddDbContext<AppDbContext>(options => options.UseSqlite(connection));
+                foreach (var descriptor in services.Where(d => d.ServiceType == typeof(IHostedService)
+                    && d.ImplementationType == typeof(ExpressVacancyWorker)).ToArray()) services.Remove(descriptor);
 
                 if (failChecklistGeneration)
                 {

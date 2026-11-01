@@ -17,5 +17,7 @@ public enum ExpressVacancyStatus
     Approved = 3,
 
     // La vacante fue descartada.
-    Discarded = 4
+    Discarded = 4,
+
+    Published = 5
 }

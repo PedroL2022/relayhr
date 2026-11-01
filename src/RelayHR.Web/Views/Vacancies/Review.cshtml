@@ -1,0 +1,26 @@
+@model int
+@using Microsoft.AspNetCore.Authorization
+@using RelayHR.Web.Security
+@inject IAuthorizationService Authorization
+@{ ViewData["Title"] = "Revisar vacante"; var canPublish = (await Authorization.AuthorizeAsync(User, Policies.PublishVacancy)).Succeeded; }
+<section class="page-heading"><div><p class="eyebrow">REVISIÓN DE VACANTE</p><h1 id="vacancy-heading">Vacante #@Model</h1></div><a class="button button-secondary" asp-action="Index">Volver al listado</a></section>
+<section class="panel vacancy-panel" id="vacancy-review" data-id="@Model" data-can-publish="@canPublish.ToString().ToLowerInvariant()">
+ @Html.AntiForgeryToken()
+ <p id="vacancy-summary" aria-live="polite">Cargando información…</p>
+ <p id="vacancy-audit"></p><p id="vacancy-metric"></p>
+ <div id="vacancy-message" class="notice" role="status" aria-live="polite" hidden></div>
+ <div id="missing-fields" class="notice" aria-live="polite"></div>
+ <form id="vacancy-form" class="form-stack">
+  <fieldset id="vacancy-fields" disabled>
+   <label for="job-title">Cargo</label><input id="job-title" class="form-control" maxlength="150" />
+   <label for="department">Departamento</label><select id="department" class="form-select"><option value="">Pendiente de completar</option></select>
+   <label for="job-description">Descripción del puesto</label><textarea id="job-description" class="form-control" rows="6" maxlength="4000"></textarea>
+   <label for="requirements">Requisitos</label><textarea id="requirements" class="form-control" rows="6" maxlength="4000"></textarea>
+  </fieldset>
+  <div class="vacancy-actions"><button id="save-vacancy" type="submit" class="button button-secondary" disabled>Guardar cambios</button>
+  @if (canPublish) { <button id="publish-vacancy" type="button" class="button button-primary" disabled>Publicar vacante</button> }
+  <a id="public-vacancy-link" class="button button-secondary" href="/vacancies/@Model" hidden>Ver detalle público</a></div>
+ </form>
+ <dialog id="publish-confirmation" aria-labelledby="publish-confirmation-title"><h2 id="publish-confirmation-title">Publicar vacante</h2><p>La publicación mostrará la vacante a candidatos y cerrará su edición. Se guardarán los cambios del formulario antes de publicar.</p><div class="vacancy-actions"><button id="cancel-publish" type="button" class="button button-secondary">Cancelar</button><button id="confirm-publish" type="button" class="button button-primary">Confirmar publicación</button></div></dialog>
+</section>
+@section Scripts { <script src="~/js/vacancies.js" asp-append-version="true"></script> }

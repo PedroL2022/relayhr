@@ -1075,3 +1075,16 @@ input:focus-visible {
     padding: 12px 0;
   }
 }
+
+/* HU-05: pantallas de revisión y detalle público. */
+.vacancy-panel { padding: clamp(1rem, 3vw, 2rem); margin-block: 1.5rem; }
+.vacancy-panel .table { margin-top: 1rem; min-width: 760px; }
+.vacancy-panel fieldset { display: grid; gap: .65rem; border: 0; padding: 0; width: 100%; }
+.vacancy-panel textarea, .vacancy-panel select { font: inherit; }
+.vacancy-panel .form-select { max-width: 32rem; }
+.vacancy-actions { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
+.vacancy-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.vacancy-panel dialog { max-width: 34rem; border: 1px solid #e1e5ef; border-radius: 1rem; padding: 2rem; }
+.vacancy-panel dialog::backdrop { background: #14213b88; }
+.vacancy-panel [hidden] { display: none !important; }
+@media (max-width: 600px) { .vacancy-actions .button { width: 100%; } }

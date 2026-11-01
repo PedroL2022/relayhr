@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -21,6 +21,8 @@
                 <span class="header-dot" aria-hidden="true"></span>
                 Gestión de salidas
             </div>
+            @if (User.IsInRole("HumanResources") || User.IsInRole("HRAdmin") || User.IsInRole("Recruiter"))
+            { <a class="header-link" asp-controller="Vacancies" asp-action="Index">Vacantes Express</a> }
             <a class="header-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
         </div>
     </header>

@@ -24,6 +24,8 @@ public class EmployeeExit
 
     public Employee Employee { get; set; } = null!;
 
+    public ExpressVacancy? ExpressVacancy { get; set; }
+
     public ExitChecklist Checklist { get; set; } = null!;
 }
 

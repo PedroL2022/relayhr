@@ -43,7 +43,7 @@ public class ExpressVacancyService : IExpressVacancyService
         var employeeExit = await _db.EmployeeExits
             .Include(e => e.Employee)
                 .ThenInclude(emp => emp.Position)
-            .FirstOrDefaultAsync(e => e.EmployeeExitId == employeeExitId, cancellationToken)
+            .FirstOrDefaultAsync(e => e.Id == employeeExitId, cancellationToken)
             ?? throw new ExpressVacancyPermanentException(
                 $"La salida {employeeExitId} no existe, no se puede generar la vacante.");
 
