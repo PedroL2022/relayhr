@@ -1,0 +1,56 @@
+@baseUrl = https://localhost:7150
+
+### 1. Registrar un independiente: debe devolver 201
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "freelancer.prueba@example.com",
+  "password": "PruebaLocal2026!Segura",
+  "role": "Freelancer"
+}
+
+### 2. Repetir el correo: debe devolver 400
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "freelancer.prueba@example.com",
+  "password": "PruebaLocal2026!Segura",
+  "role": "Freelancer"
+}
+
+### 3. Intentar registrar un administrador: debe devolver 400
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin.prueba@example.com",
+  "password": "PruebaLocal2026!Segura",
+  "role": "HRAdmin"
+}
+
+### 4. Iniciar sesión correctamente: debe devolver 200 y un token
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "freelancer.prueba@example.com",
+  "password": "PruebaLocal2026!Segura"
+}
+
+### 5. Contraseña incorrecta: debe devolver 401
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "freelancer.prueba@example.com",
+  "password": "EstaClaveEsIncorrecta!"
+}
+
+### 6. Consultar sesión sin token: debe devolver 401
+GET {{baseUrl}}/api/auth/me
+
+### 7. Consultar sesión con token: debe devolver 200
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer PEGAR_TOKEN_AQUI
