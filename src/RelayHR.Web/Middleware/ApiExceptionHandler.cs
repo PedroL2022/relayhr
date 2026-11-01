@@ -22,6 +22,14 @@ public sealed class ApiExceptionHandler(
                 (StatusCodes.Status409Conflict, "Conflicto al registrar la salida", exception.Message),
             ChecklistConfigurationException =>
                 (StatusCodes.Status503ServiceUnavailable, "Checklist no configurado", exception.Message),
+            ChecklistTaskNotFoundException =>
+                (StatusCodes.Status404NotFound, "Tarea no encontrada", exception.Message),
+            InvalidTaskStatusException =>
+                (StatusCodes.Status400BadRequest, "Estado inválido", exception.Message),
+            TaskUpdateForbiddenException =>
+                (StatusCodes.Status403Forbidden, "Acción no permitida", exception.Message),
+            ClosedProcessException =>
+                (StatusCodes.Status409Conflict, "Proceso cerrado", exception.Message),
             _ => (0, string.Empty, string.Empty)
         };
 
@@ -30,7 +38,7 @@ public sealed class ApiExceptionHandler(
             return false;
         }
 
-        logger.LogWarning(exception, "La solicitud de salida fue rechazada: {Title}", title);
+        logger.LogWarning(exception, "La solicitud fue rechazada: {Title}", title);
         httpContext.Response.StatusCode = statusCode;
         await httpContext.Response.WriteAsJsonAsync(new ProblemDetails
         {
