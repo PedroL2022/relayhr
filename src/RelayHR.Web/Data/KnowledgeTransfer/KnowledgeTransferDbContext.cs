@@ -13,12 +13,14 @@ public class KnowledgeTransferDbContext : DbContext, IKnowledgeTransferDbContext
     public KnowledgeTransferDbContext(DbContextOptions<KnowledgeTransferDbContext> options) : base(options) { }
 
     public DbSet<EmployeeExit> EmployeeExits => Set<EmployeeExit>();
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
     public DbSet<KnowledgeTransferProject> KnowledgeTransferProjects => Set<KnowledgeTransferProject>();
     public DbSet<KnowledgeTransferTask> KnowledgeTransferTasks => Set<KnowledgeTransferTask>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new EmployeeExitStubConfiguration());
+        modelBuilder.ApplyConfiguration(new AppUserStubConfiguration());
         modelBuilder.ApplyConfiguration(new KnowledgeTransferProjectConfiguration());
         modelBuilder.ApplyConfiguration(new KnowledgeTransferTaskConfiguration());
     }

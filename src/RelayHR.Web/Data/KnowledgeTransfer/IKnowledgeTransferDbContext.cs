@@ -7,6 +7,7 @@ namespace RelayHR.Web.Data.KnowledgeTransfer;
 public interface IKnowledgeTransferDbContext
 {
     DbSet<EmployeeExit> EmployeeExits { get; }
+    DbSet<AppUser> AppUsers { get; }
     DbSet<KnowledgeTransferProject> KnowledgeTransferProjects { get; }
     DbSet<KnowledgeTransferTask> KnowledgeTransferTasks { get; }
 

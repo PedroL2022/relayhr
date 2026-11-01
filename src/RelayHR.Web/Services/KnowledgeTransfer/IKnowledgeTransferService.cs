@@ -9,4 +9,10 @@ public interface IKnowledgeTransferService
 
     Task<OperationResult<KnowledgeTransferTaskResponseDTO>> CreateTaskAsync(
         int employeeExitId, CreateKnowledgeTransferTaskDTO dto, CancellationToken cancellationToken = default);
+
+    Task<OperationResult<AssignmentResponseDTO>> AssignTemporaryResponsibleAsync(
+        int taskId, int? callerUserId, AssignTemporaryResponsibleDTO dto, CancellationToken cancellationToken = default);
+
+    Task<OperationResult<IReadOnlyList<MyTaskDTO>>> GetMyTasksAsync(
+        int? userId, CancellationToken cancellationToken = default);
 }

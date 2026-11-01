@@ -110,6 +110,61 @@ public class KnowledgeTransferService : IKnowledgeTransferService
             "Tarea registrada correctamente.");
     }
 
+    public async Task<OperationResult<AssignmentResponseDTO>> AssignTemporaryResponsibleAsync(
+        int taskId, int? callerUserId, AssignTemporaryResponsibleDTO dto, CancellationToken cancellationToken = default)
+    {
+        // Solo un usuario identificado puede asignar. Los roles permitidos se definen al unir con la HU-08.
+        if (callerUserId is null)
+            return OperationResult<AssignmentResponseDTO>.Unauthorized("Debe iniciar sesión para asignar responsables.");
+
+        var task = await _db.KnowledgeTransferTasks
+            .FirstOrDefaultAsync(t => t.Id == taskId, cancellationToken);
+        if (task is null)
+            return OperationResult<AssignmentResponseDTO>.NotFound("No existe una tarea con el identificador indicado.");
+
+        if (dto.TemporaryResponsibleUserId is null)
+            return OperationResult<AssignmentResponseDTO>.Invalid(
+                new List<string> { "El responsable temporal es obligatorio." });
+
+        var user = await _db.AppUsers.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == dto.TemporaryResponsibleUserId.Value, cancellationToken);
+        if (user is null)
+            return OperationResult<AssignmentResponseDTO>.Invalid(
+                new List<string> { "El usuario indicado no existe." });
+        if (!user.IsActive)
+            return OperationResult<AssignmentResponseDTO>.Invalid(
+                new List<string> { "El usuario indicado no está activo." });
+
+        // Una sola columna garantiza un único responsable; reasignar reemplaza al anterior.
+        task.TemporaryResponsibleUserId = user.Id;
+        task.AssignedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return OperationResult<AssignmentResponseDTO>.Ok(
+            new AssignmentResponseDTO(task.Id, user.Id, task.AssignedAt.Value),
+            "Responsable temporal asignado correctamente.");
+    }
+
+    public async Task<OperationResult<IReadOnlyList<MyTaskDTO>>> GetMyTasksAsync(
+        int? userId, CancellationToken cancellationToken = default)
+    {
+        if (userId is null)
+            return OperationResult<IReadOnlyList<MyTaskDTO>>.Unauthorized("Debe iniciar sesión para consultar sus tareas.");
+
+        var tasks = await _db.KnowledgeTransferTasks.AsNoTracking()
+            .Where(t => t.TemporaryResponsibleUserId == userId.Value)
+            .OrderByDescending(t => t.AssignedAt)
+            .ToListAsync(cancellationToken);
+
+        IReadOnlyList<MyTaskDTO> result = tasks
+            .Select(t => new MyTaskDTO(
+                t.Id, t.EmployeeExitId, t.ProjectId, t.Title, t.Description,
+                t.Status.ToString(), t.AssignedAt))
+            .ToList();
+
+        return OperationResult<IReadOnlyList<MyTaskDTO>>.Ok(result, "Tareas obtenidas correctamente.");
+    }
+
     private const string InvalidStatusMessage =
         "El estado no es válido. Valores permitidos: Pending, InProgress, Completed.";
 

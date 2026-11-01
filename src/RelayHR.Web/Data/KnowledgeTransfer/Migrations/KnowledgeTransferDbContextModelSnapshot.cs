@@ -69,6 +69,9 @@ namespace RelayHR.Web.Data.KnowledgeTransfer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -91,6 +94,9 @@ namespace RelayHR.Web.Data.KnowledgeTransfer.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<int?>("TemporaryResponsibleUserId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -102,7 +108,25 @@ namespace RelayHR.Web.Data.KnowledgeTransfer.Migrations
 
                     b.HasIndex("ProjectId");
 
+                    b.HasIndex("TemporaryResponsibleUserId");
+
                     b.ToTable("KnowledgeTransferTasks", (string)null);
+                });
+
+            modelBuilder.Entity("RelayHR.Web.Entities.Stubs.AppUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppUsers", (string)null);
                 });
 
             modelBuilder.Entity("RelayHR.Web.Entities.Stubs.EmployeeExit", b =>
@@ -148,9 +172,16 @@ namespace RelayHR.Web.Data.KnowledgeTransfer.Migrations
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("RelayHR.Web.Entities.Stubs.AppUser", "TemporaryResponsibleUser")
+                        .WithMany()
+                        .HasForeignKey("TemporaryResponsibleUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("EmployeeExit");
 
                     b.Navigation("Project");
+
+                    b.Navigation("TemporaryResponsibleUser");
                 });
 
             modelBuilder.Entity("RelayHR.Web.Entities.KnowledgeTransfer.KnowledgeTransferProject", b =>

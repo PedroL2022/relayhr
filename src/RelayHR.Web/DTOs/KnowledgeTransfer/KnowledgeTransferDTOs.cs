@@ -49,3 +49,22 @@ public class ApiResponse<T>
     public T? Data { get; set; }
     public IReadOnlyList<string> Errors { get; set; } = Array.Empty<string>();
 }
+
+public class AssignTemporaryResponsibleDTO
+{
+    public int? TemporaryResponsibleUserId { get; set; }
+}
+
+public record AssignmentResponseDTO(
+    int TaskId,
+    int TemporaryResponsibleUserId,
+    DateTime AssignedAt);
+
+public record MyTaskDTO(
+    int Id,
+    int EmployeeExitId,
+    int? ProjectId,
+    string Title,
+    string Description,
+    string Status,
+    DateTime? AssignedAt);

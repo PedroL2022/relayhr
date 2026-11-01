@@ -13,6 +13,12 @@ public class OperationResult<T>
     public static OperationResult<T> Created(T data, string message) =>
         new() { StatusCode = 201, Success = true, Message = message, Data = data };
 
+    public static OperationResult<T> Ok(T data, string message) =>
+        new() { StatusCode = 200, Success = true, Message = message, Data = data };
+
+    public static OperationResult<T> Unauthorized(string message) =>
+        new() { StatusCode = 401, Success = false, Message = message, Errors = new[] { message } };
+
     public static OperationResult<T> NotFound(string message) =>
         new() { StatusCode = 404, Success = false, Message = message, Errors = new[] { message } };
 

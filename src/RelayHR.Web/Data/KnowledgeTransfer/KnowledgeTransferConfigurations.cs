@@ -15,6 +15,16 @@ public class EmployeeExitStubConfiguration : IEntityTypeConfiguration<EmployeeEx
     }
 }
 
+// TEMPORAL: configuración del stub de usuarios. Borrar cuando exista la configuración real (HU-08).
+public class AppUserStubConfiguration : IEntityTypeConfiguration<AppUser>
+{
+    public void Configure(EntityTypeBuilder<AppUser> builder)
+    {
+        builder.ToTable("AppUsers");
+        builder.HasKey(u => u.Id);
+    }
+}
+
 public class KnowledgeTransferProjectConfiguration : IEntityTypeConfiguration<KnowledgeTransferProject>
 {
     public void Configure(EntityTypeBuilder<KnowledgeTransferProject> builder)
@@ -59,7 +69,14 @@ public class KnowledgeTransferTaskConfiguration : IEntityTypeConfiguration<Knowl
             .HasForeignKey(t => t.ProjectId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Restrict: no se borra un usuario que tenga tareas asignadas.
+        builder.HasOne(t => t.TemporaryResponsibleUser)
+            .WithMany()
+            .HasForeignKey(t => t.TemporaryResponsibleUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(t => t.EmployeeExitId);
         builder.HasIndex(t => t.ProjectId);
+        builder.HasIndex(t => t.TemporaryResponsibleUserId);
     }
 }

@@ -21,5 +21,10 @@ public class KnowledgeTransferTask
     public KnowledgeTransferStatus Status { get; set; } = KnowledgeTransferStatus.Pending;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    // SCRUM-26 agrega aquí: TemporaryResponsibleUserId y AssignedAt.
+    /// <summary>Responsable temporal actual. Null = tarea sin asignar. Máximo uno por tarea.</summary>
+    public int? TemporaryResponsibleUserId { get; set; }
+    public AppUser? TemporaryResponsibleUser { get; set; }
+
+    /// <summary>Fecha de la última asignación del responsable temporal.</summary>
+    public DateTime? AssignedAt { get; set; }
 }
