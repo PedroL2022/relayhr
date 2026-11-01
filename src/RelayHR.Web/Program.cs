@@ -1,4 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using RelayHR.Web.Data;
+using RelayHR.Web.Repository;
 var builder = WebApplication.CreateBuilder(args);
+
+// Registrar el ApplicationDbContext con SQL Server LocalDB (incluido con .NET/Visual Studio)
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection") 
+        ?? "Server=(localdb)\\mssqllocaldb;Database=RelayHRDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"));
+
+builder.Services.AddScoped<IFreelancerRepository, FreelancerRepository>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -27,3 +38,7 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+
+// Registrar el Patrón Repositorio para que los controladores puedan usarlo
+builder.Services.AddScoped<IFreelancerRepository, FreelancerRepository>();
