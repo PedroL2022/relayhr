@@ -8,4 +8,8 @@ public sealed record ChecklistTaskResponseDTO(
     int ResponsibleUserId,
     string ResponsibleName,
     DateOnly DueDate,
-    string Status);
+    string Status,
+    bool IsRequired = true,
+    DateTime? CompletedAt = null,
+    int? CompletedByUserId = null,
+    string? Notes = null);

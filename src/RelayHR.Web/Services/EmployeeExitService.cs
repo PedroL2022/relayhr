@@ -71,7 +71,11 @@ public sealed class EmployeeExitService(
                 task.ResponsibleUserId,
                 task.ResponsibleUser.Name,
                 task.DueDate,
-                task.Status.ToString()))
+                task.Status.ToString(),
+                task.IsRequired,
+                task.CompletedAt,
+                task.CompletedByUserId,
+                task.Notes))
             .ToArray();
 
         return new ExitChecklistResponseDTO(
