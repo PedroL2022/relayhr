@@ -6,7 +6,7 @@ Content-Type: application/json
 
 {
   "email": "rrhh@relayhr.test",
-  "password": "Leonardo$1998"
+  "password": TU_CONTRASEÑA
 }
 
 ### 2. Completar la tarea
