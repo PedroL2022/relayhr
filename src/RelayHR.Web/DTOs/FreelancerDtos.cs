@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RelayHR.Web.DTOs
 {
     // Respuesta envolvente estándar
@@ -63,5 +65,60 @@ namespace RelayHR.Web.DTOs
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string ProjectUrl { get; set; } = string.Empty;
+    }
+
+    // HU-09: DTO para Crear Perfil (POST)
+    public class CreateFreelancerProfileDTO
+    {
+        [Required(ErrorMessage = "El UserId es obligatorio.")]
+        public int UserId { get; set; }
+
+        [Required(ErrorMessage = "La categoría (CategoryId) es obligatoria.")]
+        public int CategoryId { get; set; }
+
+        [Required(ErrorMessage = "El título profesional es obligatorio.")]
+        [MaxLength(150)]
+        public string ProfessionalTitle { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La experiencia profesional es obligatoria.")]
+        [MaxLength(2000)]
+        public string Experience { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La tarifa por hora es obligatoria.")]
+        [Range(0.01, 999999.99, ErrorMessage = "La tarifa debe ser mayor a cero.")]
+        public decimal HourlyRate { get; set; }
+
+        [Required(ErrorMessage = "La moneda es obligatoria.")]
+        [MaxLength(3)]
+        public string Currency { get; set; } = "DOP";
+
+        public List<AvailabilityItemDTO> Availability { get; set; } = new();
+        public List<PortfolioItemDTO> Portfolio { get; set; } = new();
+    }
+
+    // HU-09: DTO para Actualizar Perfil (PUT)
+    public class UpdateFreelancerProfileDTO
+    {
+        [Required(ErrorMessage = "La categoría (CategoryId) es obligatoria.")]
+        public int CategoryId { get; set; }
+
+        [Required(ErrorMessage = "El título profesional es obligatorio.")]
+        [MaxLength(150)]
+        public string ProfessionalTitle { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La experiencia profesional es obligatoria.")]
+        [MaxLength(2000)]
+        public string Experience { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La tarifa por hora es obligatoria.")]
+        [Range(0.01, 999999.99, ErrorMessage = "La tarifa debe ser mayor a cero.")]
+        public decimal HourlyRate { get; set; }
+
+        [Required(ErrorMessage = "La moneda es obligatoria.")]
+        [MaxLength(3)]
+        public string Currency { get; set; } = "DOP";
+
+        public List<AvailabilityItemDTO> Availability { get; set; } = new();
+        public List<PortfolioItemDTO> Portfolio { get; set; } = new();
     }
 }

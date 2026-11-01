@@ -1,8 +1,437 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Directorio y Gestión de Talento Independiente";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold text-primary mb-0">RelayHR · Talento Independiente</h2>
+            <p class="text-muted mb-0">Búsqueda y Filtrado (HU-06) + Gestión CRUD de Perfiles (HU-09)</p>
+        </div>
+        <button class="btn btn-success fw-semibold shadow-sm" onclick="abrirModalCrear()">
+            + Crear Mi Perfil (HU-09)
+        </button>
+    </div>
+
+    <!-- Alertas de retroalimentación -->
+    <div id="alertaSistema" class="alert d-none shadow-sm" role="alert"></div>
+
+    <!-- PANEL DE BÚSQUEDA Y FILTRADO (HU-06) -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body">
+            <h6 class="fw-bold text-secondary text-uppercase mb-3">Filtros de Búsqueda (HU-06)</h6>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Categoría Profesional</label>
+                    <select id="filtroCategoria" class="form-select">
+                        <option value="">Todas las categorías</option>
+                        <option value="1">1 - Diseño UI/UX</option>
+                        <option value="2">2 - Contabilidad y Finanzas</option>
+                        <option value="3">3 - Desarrollo de software</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Tarifa Mín. (DOP)</label>
+                    <input type="number" id="filtroMinRate" class="form-control" placeholder="Ej. 500" min="0">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Tarifa Máx. (DOP)</label>
+                    <input type="number" id="filtroMaxRate" class="form-control" placeholder="Ej. 2000" min="0">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Disponible Desde</label>
+                    <input type="date" id="filtroDesde" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Disponible Hasta</label>
+                    <input type="date" id="filtroHasta" class="form-control">
+                </div>
+                <div class="col-md-1 d-grid gap-1">
+                    <button class="btn btn-primary fw-semibold" onclick="buscarPerfiles()">Buscar</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()">Limpiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de métricas de rendimiento -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span id="contadorResultados" class="fw-semibold text-secondary">Cargando perfiles...</span>
+        <span id="tiempoRespuesta" class="badge bg-dark">Tiempo: -- ms (Meta &lt; 3000 ms)</span>
+    </div>
+
+    <!-- Mensaje Sin Resultados (Criterio 2 de HU-06) -->
+    <div id="cajaSinResultados" class="alert alert-warning text-center py-5 d-none shadow-sm">
+        <h4 class="fw-bold mb-1">Sin resultados.</h4>
+        <p class="mb-0">Ningún perfil activo coincide con todos los filtros aplicados.</p>
+    </div>
+
+    <!-- Grilla de Tarjetas de Perfiles -->
+    <div id="contenedorTarjetas" class="row row-cols-1 row-cols-md-3 g-4"></div>
 </div>
+
+<!-- MODAL: VER PERFIL COMPLETO (HU-06 Criterio 3) -->
+<div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="detalleTitulo">Detalle del Perfil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalleCuerpo"></div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: CREAR / EDITAR PERFIL (HU-09 Criterios 1, 2 y 3) -->
+<div class="modal fade" id="modalFormulario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold" id="formModalTitulo">Crear Perfil Independiente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="errorFormulario" class="alert alert-danger d-none"></div>
+                <input type="hidden" id="perfilId">
+                
+                <div class="row g-3">
+                    <div class="col-md-4" id="grupoUserId">
+                        <label class="form-label fw-semibold">ID de Usuario *</label>
+                        <input type="number" id="inputUserId" class="form-control" placeholder="Ej. 10">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Categoría Profesional *</label>
+                        <select id="inputCategoryId" class="form-select">
+                            <option value="">-- Seleccione --</option>
+                            <option value="1">Diseño UI/UX</option>
+                            <option value="2">Contabilidad y Finanzas</option>
+                            <option value="3">Desarrollo de software</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Tarifa por Hora (DOP) *</label>
+                        <input type="number" step="0.01" id="inputHourlyRate" class="form-control" placeholder="Ej. 1200">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Título Profesional *</label>
+                        <input type="text" id="inputProfessionalTitle" class="form-control" placeholder="Ej. Desarrollador Full Stack .NET">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Experiencia Profesional *</label>
+                        <textarea id="inputExperience" class="form-control" rows="3" placeholder="Describe tu experiencia, años y tecnologías..."></textarea>
+                    </div>
+
+                    <hr class="my-2">
+                    <h6 class="fw-bold text-primary mb-0">Disponibilidad</h6>
+                    <div class="col-md-6">
+                        <label class="form-label small">Disponible Desde *</label>
+                        <input type="date" id="inputAvailableFrom" class="form-control" value="2026-11-01">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small">Disponible Hasta *</label>
+                        <input type="date" id="inputAvailableUntil" class="form-control" value="2026-11-30">
+                    </div>
+
+                    <hr class="my-2">
+                    <h6 class="fw-bold text-primary mb-0">Proyecto Destacado del Portafolio</h6>
+                    <div class="col-md-6">
+                        <label class="form-label small">Título del Proyecto *</label>
+                        <input type="text" id="inputPortfolioTitle" class="form-control" placeholder="Ej. API de Facturación">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small">URL del Proyecto *</label>
+                        <input type="url" id="inputPortfolioUrl" class="form-control" placeholder="https://github.com/mi-proyecto">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small">Descripción del Proyecto *</label>
+                        <input type="text" id="inputPortfolioDesc" class="form-control" placeholder="Breve descripción del proyecto realizado">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success fw-bold" onclick="guardarPerfil()">Guardar Perfil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let modalDetalleInstancia;
+    let modalFormularioInstancia;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        modalDetalleInstancia = new bootstrap.Modal(document.getElementById('modalDetalle'));
+        modalFormularioInstancia = new bootstrap.Modal(document.getElementById('modalFormulario'));
+        buscarPerfiles();
+    });
+
+    function mostrarAlerta(mensaje, tipo = 'success') {
+        const alerta = document.getElementById('alertaSistema');
+        alerta.className = `alert alert-${tipo} shadow-sm`;
+        alerta.textContent = mensaje;
+        alerta.classList.remove('d-none');
+        setTimeout(() => alerta.classList.add('d-none'), 5000);
+    }
+
+    // HU-06: BÚSQUEDA Y FILTRADO (READ)
+    async function buscarPerfiles() {
+        const params = new URLSearchParams();
+        const cat = document.getElementById('filtroCategoria').value;
+        const min = document.getElementById('filtroMinRate').value;
+        const max = document.getElementById('filtroMaxRate').value;
+        const desde = document.getElementById('filtroDesde').value;
+        const hasta = document.getElementById('filtroHasta').value;
+
+        if (cat) params.append('categoryId', cat);
+        if (min) params.append('minRate', min);
+        if (max) params.append('maxRate', max);
+        if (desde) params.append('availableFrom', desde);
+        if (hasta) params.append('availableUntil', hasta);
+
+        const inicio = performance.now();
+        const resp = await fetch(`/api/freelancers/search?${params.toString()}`);
+        const json = await resp.json();
+        const fin = Math.round(performance.now() - inicio);
+
+        document.getElementById('tiempoRespuesta').textContent = `Tiempo: ${fin} ms (Meta < 3000 ms)`;
+
+        const contenedor = document.getElementById('contenedorTarjetas');
+        const sinResultados = document.getElementById('cajaSinResultados');
+        contenedor.innerHTML = '';
+
+        if (!resp.ok) {
+            mostrarAlerta(json.message || 'Parámetros de filtro inválidos.', 'danger');
+            return;
+        }
+
+        const lista = json.data?.freelancers || [];
+        document.getElementById('contadorResultados').textContent = `Resultados encontrados: ${json.data?.totalResults || 0}`;
+
+        if (lista.length === 0) {
+            sinResultados.classList.remove('d-none');
+            return;
+        }
+
+        sinResultados.classList.add('d-none');
+        lista.forEach(item => {
+            contenedor.innerHTML += `
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-info text-dark">${item.category}</span>
+                                <span class="badge ${item.isAvailable ? 'bg-success' : 'bg-secondary'}">
+                                    ${item.isAvailable ? 'Disponible' : 'Sin fechas'}
+                                </span>
+                            </div>
+                            <h5 class="card-title fw-bold mb-1">${item.professionalTitle}</h5>
+                            <p class="text-muted small mb-3">ID de Perfil: #${item.id}</p>
+                            <h4 class="text-success fw-bold mb-0">${item.hourlyRate.toFixed(2)} ${item.currency} <small class="text-muted fs-6 fw-normal">/ hora</small></h4>
+                        </div>
+                        <div class="card-footer bg-white border-top-0 d-flex justify-content-between pt-0 pb-3">
+                            <button class="btn btn-outline-primary btn-sm fw-semibold" onclick="verDetalle(${item.id})">
+                                Ver Perfil
+                            </button>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="abrirModalEditar(${item.id})">Editar</button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="eliminarPerfil(${item.id})">Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function limpiarFiltros() {
+        document.getElementById('filtroCategoria').value = '';
+        document.getElementById('filtroMinRate').value = '';
+        document.getElementById('filtroMaxRate').value = '';
+        document.getElementById('filtroDesde').value = '';
+        document.getElementById('filtroHasta').value = '';
+        buscarPerfiles();
+    }
+
+    // HU-06 Criterio 3: VER DETALLE DEL PERFIL
+    async function verDetalle(id) {
+        const resp = await fetch(`/api/freelancers/${id}`);
+        const json = await resp.json();
+        if (!resp.ok) {
+            mostrarAlerta(json.message, 'danger');
+            return;
+        }
+        const p = json.data;
+        document.getElementById('detalleTitulo').textContent = `${p.professionalTitle} (#${p.id})`;
+        
+        const dispHtml = p.availability.map(a => `<li class="list-group-item">📅 Desde <strong>${a.availableFrom}</strong> hasta <strong>${a.availableUntil}</strong></li>`).join('');
+        const portHtml = p.portfolio.map(pf => `
+            <div class="border rounded p-2 mb-2 bg-light">
+                <div class="fw-bold">${pf.title}</div>
+                <div class="small text-muted mb-1">${pf.description}</div>
+                <a href="${pf.projectUrl}" target="_blank" class="small">🔗 ${pf.projectUrl}</a>
+            </div>`).join('');
+
+        document.getElementById('detalleCuerpo').innerHTML = `
+            <div class="mb-3">
+                <span class="badge bg-info text-dark fs-6 me-2">${p.category}</span>
+                <span class="fs-5 fw-bold text-success">${p.hourlyRate.toFixed(2)} ${p.currency} / hora</span>
+            </div>
+            <h6 class="fw-bold text-uppercase text-secondary">Experiencia Profesional</h6>
+            <p class="bg-light p-3 rounded">${p.experience}</p>
+            <h6 class="fw-bold text-uppercase text-secondary mt-3">Intervalos de Disponibilidad</h6>
+            <ul class="list-group mb-3">${dispHtml || '<li class="list-group-item text-muted">No registrada</li>'}</ul>
+            <h6 class="fw-bold text-uppercase text-secondary">Portafolio de Proyectos</h6>
+            ${portHtml || '<p class="text-muted">Sin proyectos registrados.</p>'}
+        `;
+        modalDetalleInstancia.show();
+    }
+
+    // HU-09: ABRIR MODAL PARA CREAR (CREATE)
+    function abrirModalCrear() {
+        document.getElementById('errorFormulario').classList.add('d-none');
+        document.getElementById('formModalTitulo').textContent = 'Crear Nuevo Perfil Independiente (HU-09)';
+        document.getElementById('perfilId').value = '';
+        document.getElementById('grupoUserId').classList.remove('d-none');
+        document.getElementById('inputUserId').value = Math.floor(Math.random() * 900) + 100;
+        document.getElementById('inputCategoryId').value = '3';
+        document.getElementById('inputProfessionalTitle').value = '';
+        document.getElementById('inputExperience').value = '';
+        document.getElementById('inputHourlyRate').value = '';
+        document.getElementById('inputAvailableFrom').value = '2026-11-10';
+        document.getElementById('inputAvailableUntil').value = '2026-11-25';
+        document.getElementById('inputPortfolioTitle').value = '';
+        document.getElementById('inputPortfolioDesc').value = '';
+        document.getElementById('inputPortfolioUrl').value = 'https://ejemplo.com/mi-portafolio';
+        modalFormularioInstancia.show();
+    }
+
+    // HU-09: ABRIR MODAL PARA EDITAR (UPDATE)
+    async function abrirModalEditar(id) {
+        const resp = await fetch(`/api/freelancers/${id}`);
+        const json = await resp.json();
+        if (!resp.ok) return;
+        const p = json.data;
+
+        document.getElementById('errorFormulario').classList.add('d-none');
+        document.getElementById('formModalTitulo').textContent = `Editar Perfil #${p.id} (HU-09)`;
+        document.getElementById('perfilId').value = p.id;
+        document.getElementById('grupoUserId').classList.add('d-none');
+
+        const mapaCat = { "Diseño UI/UX": "1", "Contabilidad y Finanzas": "2", "Desarrollo de software": "3" };
+        document.getElementById('inputCategoryId').value = mapaCat[p.category] || '3';
+        document.getElementById('inputProfessionalTitle').value = p.professionalTitle;
+        document.getElementById('inputExperience').value = p.experience;
+        document.getElementById('inputHourlyRate').value = p.hourlyRate;
+
+        if (p.availability && p.availability.length > 0) {
+            document.getElementById('inputAvailableFrom').value = p.availability[0].availableFrom;
+            document.getElementById('inputAvailableUntil').value = p.availability[0].availableUntil;
+        }
+        if (p.portfolio && p.portfolio.length > 0) {
+            document.getElementById('inputPortfolioTitle').value = p.portfolio[0].title;
+            document.getElementById('inputPortfolioDesc').value = p.portfolio[0].description;
+            document.getElementById('inputPortfolioUrl').value = p.portfolio[0].projectUrl;
+        }
+        modalFormularioInstancia.show();
+    }
+
+// HU-09: GUARDAR (EJECUTA POST O PUT)
+    async function guardarPerfil() {
+        const cajaError = document.getElementById('errorFormulario');
+        cajaError.classList.add('d-none');
+
+        const id = document.getElementById('perfilId').value;
+        const esEdicion = id !== '';
+
+        const userIdVal = parseInt(document.getElementById('inputUserId').value || '0');
+        const categoryIdVal = parseInt(document.getElementById('inputCategoryId').value || '0');
+        const titleVal = document.getElementById('inputProfessionalTitle').value.trim();
+        const expVal = document.getElementById('inputExperience').value.trim();
+        const rateVal = parseFloat(document.getElementById('inputHourlyRate').value || '0');
+        const fromVal = document.getElementById('inputAvailableFrom').value;
+        const untilVal = document.getElementById('inputAvailableUntil').value;
+        const portTitle = document.getElementById('inputPortfolioTitle').value.trim();
+        const portDesc = document.getElementById('inputPortfolioDesc').value.trim();
+        const portUrl = document.getElementById('inputPortfolioUrl').value.trim();
+
+        // Validación inmediata de campos obligatorios (Criterio 3 de HU-09)
+        if (!categoryIdVal || !titleVal || !expVal || rateVal <= 0 || !fromVal || !untilVal) {
+            cajaError.textContent = 'No se puede guardar: todos los campos marcados con (*) son obligatorios y la tarifa debe ser mayor a 0.';
+            cajaError.classList.remove('d-none');
+            return;
+        }
+
+        const payload = {
+            userId: esEdicion ? 0 : (userIdVal > 0 ? userIdVal : 99),
+            categoryId: categoryIdVal,
+            professionalTitle: titleVal,
+            experience: expVal,
+            hourlyRate: rateVal,
+            currency: "DOP",
+            availability: [{
+                availableFrom: fromVal,
+                availableUntil: untilVal
+            }],
+            portfolio: (portTitle && portDesc && portUrl) ? [{
+                title: portTitle,
+                description: portDesc,
+                projectUrl: portUrl
+            }] : []
+        };
+
+        const url = esEdicion ? `/api/freelancers/${id}` : '/api/freelancers';
+        const metodo = esEdicion ? 'PUT' : 'POST';
+
+        try {
+            const resp = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const textoRespuesta = await resp.text();
+            let json = {};
+            try { json = JSON.parse(textoRespuesta); } catch { }
+
+            if (!resp.ok) {
+                // Extraer errores de ModelState de .NET si existen
+                let detalleError = json.message || json.title || 'Error al guardar el perfil.';
+                if (json.errors) {
+                    detalleError = Object.values(json.errors).flat().join(' ');
+                }
+                cajaError.textContent = detalleError;
+                cajaError.classList.remove('d-none');
+                return;
+            }
+
+            modalFormularioInstancia.hide();
+            mostrarAlerta(json.message || 'Perfil guardado correctamente.', 'success');
+            buscarPerfiles();
+        } catch (err) {
+            cajaError.textContent = 'Error de conexión con el servidor: ' + err.message;
+            cajaError.classList.remove('d-none');
+        }
+    }
+
+    // HU-09: ELIMINAR PERFIL (DELETE)
+    async function eliminarPerfil(id) {
+        if (!confirm(`¿Seguro que deseas eliminar el perfil #${id} para retirarlo de las búsquedas?`)) return;
+
+        const resp = await fetch(`/api/freelancers/${id}`, { method: 'DELETE' });
+        const json = await resp.json();
+
+        if (resp.ok) {
+            mostrarAlerta(json.message, 'warning');
+            buscarPerfiles();
+        } else {
+            mostrarAlerta(json.message || 'No se pudo eliminar el perfil.', 'danger');
+        }
+    }
+</script>
+}
