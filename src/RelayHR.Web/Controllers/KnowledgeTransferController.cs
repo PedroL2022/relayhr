@@ -32,4 +32,12 @@ public class KnowledgeTransferController : ControllerBase
         var result = await _service.CreateTaskAsync(employeeExitId, dto, cancellationToken);
         return StatusCode(result.StatusCode, result.ToResponse());
     }
+
+    // GET /api/employee-exits/{employeeExitId}/knowledge-transfer
+    [HttpGet("knowledge-transfer")]
+    public async Task<IActionResult> GetOverview(int employeeExitId, CancellationToken cancellationToken)
+    {
+        var result = await _service.GetOverviewAsync(employeeExitId, cancellationToken);
+        return StatusCode(result.StatusCode, result.ToResponse());
+    }
 }

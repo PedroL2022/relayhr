@@ -68,3 +68,28 @@ public record MyTaskDTO(
     string Description,
     string Status,
     DateTime? AssignedAt);
+
+public record KnowledgeTransferProjectItemDTO(
+    int Id,
+    string Name,
+    string Description,
+    string Status,
+    int TaskCount);
+
+public record KnowledgeTransferTaskItemDTO(
+    int Id,
+    int? ProjectId,
+    string Title,
+    string Description,
+    string Status,
+    int? TemporaryResponsibleUserId,
+    string AssignmentStatus,
+    DateTime? AssignedAt);
+
+public record KnowledgeTransferOverviewDTO(
+    int EmployeeExitId,
+    int TotalTasks,
+    int AssignedTasks,
+    int UnassignedTasks,
+    IReadOnlyList<KnowledgeTransferProjectItemDTO> Projects,
+    IReadOnlyList<KnowledgeTransferTaskItemDTO> Tasks);

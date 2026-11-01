@@ -15,4 +15,7 @@ public interface IKnowledgeTransferService
 
     Task<OperationResult<IReadOnlyList<MyTaskDTO>>> GetMyTasksAsync(
         int? userId, CancellationToken cancellationToken = default);
+
+    Task<OperationResult<KnowledgeTransferOverviewDTO>> GetOverviewAsync(
+        int employeeExitId, CancellationToken cancellationToken = default);
 }

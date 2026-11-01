@@ -165,6 +165,59 @@ public class KnowledgeTransferService : IKnowledgeTransferService
         return OperationResult<IReadOnlyList<MyTaskDTO>>.Ok(result, "Tareas obtenidas correctamente.");
     }
 
+    public async Task<OperationResult<KnowledgeTransferOverviewDTO>> GetOverviewAsync(
+        int employeeExitId, CancellationToken cancellationToken = default)
+    {
+        var exitExists = await _db.EmployeeExits.AsNoTracking()
+            .AnyAsync(e => e.Id == employeeExitId, cancellationToken);
+        if (!exitExists)
+            return OperationResult<KnowledgeTransferOverviewDTO>.NotFound(ExitNotFoundMessage);
+
+        // Solo lectura: AsNoTracking y ninguna llamada a SaveChanges. Solo datos de esta salida.
+        var projects = await _db.KnowledgeTransferProjects.AsNoTracking()
+            .Where(p => p.EmployeeExitId == employeeExitId)
+            .OrderBy(p => p.Id)
+            .ToListAsync(cancellationToken);
+
+        var tasks = await _db.KnowledgeTransferTasks.AsNoTracking()
+            .Where(t => t.EmployeeExitId == employeeExitId)
+            .OrderBy(t => t.Id)
+            .ToListAsync(cancellationToken);
+
+        // El estado de asignación depende solo del responsable, no del estado de ejecución.
+        var taskItems = tasks
+            .Select(t => new KnowledgeTransferTaskItemDTO(
+                t.Id,
+                t.ProjectId,
+                t.Title,
+                t.Description,
+                t.Status.ToString(),
+                t.TemporaryResponsibleUserId,
+                t.TemporaryResponsibleUserId.HasValue ? "Assigned" : "Unassigned",
+                t.AssignedAt))
+            .ToList();
+
+        var projectItems = projects
+            .Select(p => new KnowledgeTransferProjectItemDTO(
+                p.Id,
+                p.Name,
+                p.Description,
+                p.Status.ToString(),
+                tasks.Count(t => t.ProjectId == p.Id)))
+            .ToList();
+
+        var assigned = taskItems.Count(t => t.AssignmentStatus == "Assigned");
+        var overview = new KnowledgeTransferOverviewDTO(
+            employeeExitId,
+            taskItems.Count,
+            assigned,
+            taskItems.Count - assigned,
+            projectItems,
+            taskItems);
+
+        return OperationResult<KnowledgeTransferOverviewDTO>.Ok(overview, "Traspaso de conocimiento obtenido correctamente.");
+    }
+
     private const string InvalidStatusMessage =
         "El estado no es válido. Valores permitidos: Pending, InProgress, Completed.";
 
