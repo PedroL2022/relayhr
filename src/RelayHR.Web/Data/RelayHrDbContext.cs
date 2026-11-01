@@ -71,8 +71,8 @@ public class RelayHrDbContext(DbContextOptions<RelayHrDbContext> options)
                 table.HasCheckConstraint(
                     "CK_EmployeeExits_Status",
                     isSqlite
-                        ? "[Status] IN ('Pending', 'InProgress', 'Completed', 'Cancelled')"
-                        : "[Status] IN (N'Pending', N'InProgress', N'Completed', N'Cancelled')");
+                        ? "[Status] IN ('Pending', 'InProgress', 'Completed', 'Cancelled', 'Closed')"
+                        : "[Status] IN (N'Pending', N'InProgress', N'Completed', N'Cancelled', N'Closed')");
             });
             entity.HasKey(exit => exit.Id);
             entity.Property(exit => exit.Status).HasMaxLength(50).IsRequired();
@@ -93,6 +93,11 @@ public class RelayHrDbContext(DbContextOptions<RelayHrDbContext> options)
                 .WithOne(checklist => checklist.EmployeeExit)
                 .HasForeignKey<ExitChecklist>(checklist => checklist.EmployeeExitId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(exit => exit.ClosedByUser)
+                .WithMany()
+                .HasForeignKey(exit => exit.ClosedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ExitChecklist>(entity =>
@@ -132,6 +137,13 @@ public class RelayHrDbContext(DbContextOptions<RelayHrDbContext> options)
             entity.HasOne(task => task.ResponsibleUser)
                 .WithMany(user => user.AssignedTasks)
                 .HasForeignKey(task => task.ResponsibleUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(task => task.Notes).HasMaxLength(500);
+
+            entity.HasOne(task => task.CompletedByUser)
+                .WithMany()
+                .HasForeignKey(task => task.CompletedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

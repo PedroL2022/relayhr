@@ -172,6 +172,12 @@ namespace RelayHR.Web.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CompletedByUserId")
+                        .HasColumnType("int");
+
                     b.Property<int>("DepartmentId")
                         .HasColumnType("int");
 
@@ -180,6 +186,13 @@ namespace RelayHR.Web.Data.Migrations
 
                     b.Property<int>("ExitChecklistId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("ResponsibleUserId")
                         .HasColumnType("int");
@@ -197,6 +210,8 @@ namespace RelayHR.Web.Data.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompletedByUserId");
 
                     b.HasIndex("DepartmentId");
 
@@ -276,6 +291,12 @@ namespace RelayHR.Web.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ClosedByUserId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -294,13 +315,15 @@ namespace RelayHR.Web.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClosedByUserId");
+
                     b.HasIndex("EmployeeId")
                         .IsUnique()
                         .HasFilter("[Status] IN (N'Pending', N'InProgress')");
 
                     b.ToTable("EmployeeExits", null, t =>
                         {
-                            t.HasCheckConstraint("CK_EmployeeExits_Status", "[Status] IN (N'Pending', N'InProgress', N'Completed', N'Cancelled')");
+                            t.HasCheckConstraint("CK_EmployeeExits_Status", "[Status] IN (N'Pending', N'InProgress', N'Completed', N'Cancelled', N'Closed')");
 
                             t.HasCheckConstraint("CK_EmployeeExits_Status_NotEmpty", "LEN(LTRIM(RTRIM([Status]))) > 0");
                         });
@@ -456,6 +479,11 @@ namespace RelayHR.Web.Data.Migrations
 
             modelBuilder.Entity("RelayHR.Web.Entities.ChecklistTask", b =>
                 {
+                    b.HasOne("RelayHR.Web.Entities.User", "CompletedByUser")
+                        .WithMany()
+                        .HasForeignKey("CompletedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("RelayHR.Web.Entities.Department", "Department")
                         .WithMany("ChecklistTasks")
                         .HasForeignKey("DepartmentId")
@@ -474,6 +502,8 @@ namespace RelayHR.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("CompletedByUser");
+
                     b.Navigation("Department");
 
                     b.Navigation("ExitChecklist");
@@ -483,11 +513,18 @@ namespace RelayHR.Web.Data.Migrations
 
             modelBuilder.Entity("RelayHR.Web.Entities.EmployeeExit", b =>
                 {
+                    b.HasOne("RelayHR.Web.Entities.User", "ClosedByUser")
+                        .WithMany()
+                        .HasForeignKey("ClosedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("RelayHR.Web.Entities.Employee", "Employee")
                         .WithMany("Exits")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("ClosedByUser");
 
                     b.Navigation("Employee");
                 });
