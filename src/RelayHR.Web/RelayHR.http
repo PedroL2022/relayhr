@@ -1,4 +1,5 @@
-@baseUrl = https://localhost:7150
+@baseUrl = https://localhost:7091
+
 
 ### 1. Registrar un independiente: debe devolver 201
 POST {{baseUrl}}/api/auth/register
@@ -53,4 +54,8 @@ GET {{baseUrl}}/api/auth/me
 
 ### 7. Consultar sesión con token: debe devolver 200
 GET {{baseUrl}}/api/auth/me
-Authorization: Bearer PEGAR_TOKEN_AQUI
+Authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkOGNjODM5Ny1lOGZiLTRkMjctYTFjOC1mZmM3M2FmY2RhYjYiLCJqdGkiOiJlNDQ3M2JiNi1mYjM3LTQwMGItOGMxNC03YzM2NGNlM2RkYWMiLCJzZWN1cml0eV9zdGFtcCI6IjIxN2I3NjBjLWM1YzItNDcwNy05MGU0LTdmN2Q0MTc2NzFiMCIsInJvbGUiOiJGcmVlbGFuY2VyIiwibmJmIjoxNzkzNTY2MzMzLCJleHAiOjE3OTM1Njk5MzMsImlzcyI6IlJlbGF5SFIiLCJhdWQiOiJSZWxheUhSLldlYiJ9.h-tt-NnXs2zzbBvgk57bvAF2CUftMMCPn0tkkx_Re44
+
+### Token inválido: debe devolver 401
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer token-invalido

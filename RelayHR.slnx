@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/RelayHR.Test/">
+    <Project Path="RelayHR.Test/RelayHR.Test.csproj" Id="630bfe32-5ce6-45be-bba2-fcf03b9947a9" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/RelayHR.Web/RelayHR.Web.csproj" />
   </Folder>
