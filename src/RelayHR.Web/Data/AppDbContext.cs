@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<EmployeeExit> EmployeeExits => Set<EmployeeExit>();
     public DbSet<ExpressVacancy> ExpressVacancies => Set<ExpressVacancy>();
+    public DbSet<ExpressVacancyRequest> ExpressVacancyRequests => Set<ExpressVacancyRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -15,8 +15,11 @@ public class ExpressVacancy
         public const string JobDescription = nameof(JobDescription);
         public const string Requirements = nameof(Requirements);
     }
-    
+
+    // Marcador explícito para los campos del perfil que no tienen información.
+    // No es un dato inventado: indica que alguien debe completarlo en la revisión.
     public const string ToComplete = "ToComplete";
+
     public int ExpressVacancyId { get; set; }
 
     // Salida que originó la vacante (obligatoria y única).
@@ -74,7 +77,7 @@ public class ExpressVacancy
         return vacancy;
     }
 
-      /// <summary>
+    /// <summary>
     /// Devuelve la lista de campos del perfil que siguen sin información.
     /// Un texto con el marcador ToComplete cuenta como pendiente.
     /// Sirve también para recalcular la lista cuando RRHH completa datos.
