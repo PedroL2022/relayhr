@@ -11,6 +11,7 @@ public static class AuthorizationPolicies
     public const string RequestServices = "RequestServices";
     public const string RespondToRequests = "RespondToRequests";
     public const string ViewOwnRequests = "ViewOwnRequests";
+    public const string OwnResource = "OwnResource";
 
     public static void Configure(AuthorizationOptions options)
     {
@@ -41,5 +42,9 @@ public static class AuthorizationPolicies
         options.AddPolicy(ViewOwnRequests, policy =>
             policy.RequireAuthenticatedUser()
                 .RequireRole("Company", "Freelancer"));
+
+        options.AddPolicy(OwnResource, policy =>
+    policy.RequireAuthenticatedUser()
+        .AddRequirements(new ResourceOwnerRequirement()));
     }
 }

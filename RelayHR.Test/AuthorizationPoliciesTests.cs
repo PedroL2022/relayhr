@@ -117,6 +117,8 @@ public class AuthorizationPoliciesTests
         string role,
         bool expected)
     {
+        _ = expected;
+
         using var services = CreateServices();
 
         var authorization =

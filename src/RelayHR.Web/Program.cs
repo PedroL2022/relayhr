@@ -7,8 +7,17 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using RelayHR.Web.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<
+    IAuthorizationHandler,
+    ResourceOwnerHandler>();
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -153,6 +162,52 @@ builder.Services
 builder.Services.AddAuthorization(
     AuthorizationPolicies.Configure);
 
+// Mantiene el formato de respuesta cuando falla la validación de un DTO.
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+        new BadRequestObjectResult(new
+        {
+            success = false,
+            message = "Los datos enviados no son válidos. Revisa los campos.",
+            data = (object?)null
+        });
+});
+
+// Limita solicitudes por dirección IP.
+// El bloqueo por cuenta de AuthService sigue aplicándose.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode =
+        StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new
+            {
+                success = false,
+                message = "Demasiados intentos. Espera antes de volver a intentarlo.",
+                data = (object?)null
+            },
+            cancellationToken: cancellationToken);
+    };
+
+    options.AddPolicy("AuthRequests", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey:
+                context.Connection.RemoteIpAddress?.ToString()
+                ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -167,6 +222,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapStaticAssets();

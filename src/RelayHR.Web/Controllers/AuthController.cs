@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using RelayHR.Web.DTOs.Auth;
 using RelayHR.Web.Services;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace RelayHR.Web.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-[AllowAnonymous]
+[Authorize]
 public class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
@@ -18,6 +19,7 @@ public class AuthController : ControllerBase
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting("AuthRequests")]
     [HttpPost("register")]
     public async Task<IActionResult> Register(
         [FromBody] RegisterUserDTO dto,
@@ -45,6 +47,7 @@ public class AuthController : ControllerBase
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting("AuthRequests")]
     [HttpPost("login")]
     public async Task<IActionResult> Login(
         [FromBody] LoginDTO dto,

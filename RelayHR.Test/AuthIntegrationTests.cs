@@ -52,7 +52,12 @@ public class AuthIntegrationTests : IClassFixture<AuthTestFactory>
 
         using var response = await client.GetAsync("/api/auth/me");
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Esperado: 401. Recibido: {(int)response.StatusCode}. " +
+            $"Contenido: {body}");
         Assert.Contains(
             response.Headers.WwwAuthenticate,
             header => header.Scheme == "Bearer");
