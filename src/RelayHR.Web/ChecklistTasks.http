@@ -1,0 +1,19 @@
+@host = https://localhost:7091
+
+### 1. Iniciar sesión
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "rrhh@relayhr.test",
+  "password": TU_CONTRASEÑA
+}
+
+### 2. Completar la tarea
+PATCH {{host}}/api/checklist-tasks/1/status
+Content-Type: application/json
+
+{
+  "status": "Completed",
+  "notes": "Equipo devuelto y verificado."
+}
