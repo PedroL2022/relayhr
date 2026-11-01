@@ -8,6 +8,14 @@ using RelayHR.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Registrar el ApplicationDbContext con SQL Server LocalDB (incluido con .NET/Visual Studio)
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection") 
+        ?? "Server=(localdb)\\mssqllocaldb;Database=RelayHRDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"));
+
+builder.Services.AddScoped<IFreelancerRepository, FreelancerRepository>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddOpenApi();
