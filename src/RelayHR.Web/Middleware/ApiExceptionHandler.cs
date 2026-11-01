@@ -29,7 +29,9 @@ public sealed class ApiExceptionHandler(
             TaskUpdateForbiddenException =>
                 (StatusCodes.Status403Forbidden, "Acción no permitida", exception.Message),
             ClosedProcessException =>
-                (StatusCodes.Status409Conflict, "Proceso cerrado", exception.Message),
+    (StatusCodes.Status409Conflict, "Proceso cerrado", exception.Message),
+            ExitNotFoundException =>
+                (StatusCodes.Status404NotFound, "Salida no encontrada", exception.Message),
             _ => (0, string.Empty, string.Empty)
         };
 

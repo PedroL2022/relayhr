@@ -47,6 +47,7 @@ builder.Services.AddScoped<IEmployeeExitRepository, EmployeeExitRepository>();
 builder.Services.AddScoped<IExitChecklistService, ExitChecklistService>();
 builder.Services.AddScoped<IEmployeeExitService, EmployeeExitService>();
 builder.Services.AddScoped<IChecklistTaskService, ChecklistTaskService>();
+builder.Services.AddScoped<IExitTrackingService, ExitTrackingService>();
 var app = builder.Build();
 
 // Crea la cuenta inicial solo cuando se proporcionan los tres secretos por configuración.
