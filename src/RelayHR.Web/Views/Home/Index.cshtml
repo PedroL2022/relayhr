@@ -1,8 +1,169 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Salidas de empleados";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var isHrAdmin = User.IsInRole("HumanResources");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">RECURSOS HUMANOS <span class="eyebrow-divider">/</span> OPERACIONES</p>
+        <h1>Salidas de empleados</h1>
+        <p class="heading-copy">Coordina cada paso del proceso y mantén a todos los equipos al tanto.</p>
+    </div>
+    @if (isHrAdmin)
+    {
+        <form id="logout-form" class="logout-form">
+            <span class="session-label"><span class="online-dot"></span> Sesión de RR. HH.</span>
+            <button type="submit" class="button button-quiet">Cerrar sesión</button>
+        </form>
+    }
+</section>
+
+@if (!isAuthenticated)
+{
+    <section class="auth-layout">
+        <div class="auth-story">
+            <div class="story-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                    <path d="M24 5.5 39 12v10.5c0 9.2-6.4 16.3-15 20-8.6-3.7-15-10.8-15-20V12l15-6.5Z" stroke="currentColor" stroke-width="2.2" />
+                    <path d="m17.5 23.5 4.3 4.3 9-9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <p class="eyebrow">ESPACIO DE TRABAJO SEGURO</p>
+            <h2>Cada salida,<br />un proceso completo.</h2>
+            <p>Inicia sesión con tu cuenta de Recursos Humanos para registrar salidas y coordinar las tareas de cada departamento.</p>
+            <div class="department-list">
+                <span><i class="department-dot dot-tech"></i>Tecnología</span>
+                <span><i class="department-dot dot-people"></i>Recursos Humanos</span>
+                <span><i class="department-dot dot-finance"></i>Finanzas</span>
+            </div>
+        </div>
+
+        <div class="panel login-panel">
+            <div class="panel-heading">
+                <div class="panel-icon icon-purple" aria-hidden="true">↗</div>
+                <div>
+                    <p class="eyebrow">BIENVENIDO/A</p>
+                    <h2>Iniciar sesión</h2>
+                </div>
+            </div>
+            <p class="panel-description">Usa las credenciales de tu cuenta de Recursos Humanos.</p>
+            <form id="login-form" class="form-stack">
+                <label for="login-email">Correo electrónico</label>
+                <input id="login-email" name="email" type="email" autocomplete="username" placeholder="nombre@empresa.com" required />
+                <label for="login-password">Contraseña</label>
+                <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Tu contraseña" required />
+                <button class="button button-primary button-full" type="submit">
+                    <span>Entrar al espacio</span><span aria-hidden="true">→</span>
+                </button>
+            </form>
+            <div id="login-message" class="notice" role="status" aria-live="polite" hidden></div>
+            <p class="security-note"><span aria-hidden="true">●</span> Acceso protegido para personal autorizado.</p>
+        </div>
+    </section>
+}
+else if (!isHrAdmin)
+{
+    <section class="panel access-denied">
+        <div class="empty-icon" aria-hidden="true">!</div>
+        <h2>Acceso restringido</h2>
+        <p>Tu cuenta inició sesión, pero no tiene el rol de Recursos Humanos necesario para administrar salidas.</p>
+        <form id="logout-form">
+            <button type="submit" class="button button-quiet">Cerrar sesión</button>
+        </form>
+        <div id="logout-message" class="notice" role="status" aria-live="polite" hidden></div>
+    </section>
+}
+else
+{
+    <section class="dashboard-grid">
+        <div class="main-column">
+            <section class="panel create-panel">
+                <div class="panel-heading">
+                    <div class="panel-icon icon-blue" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="eyebrow">NUEVO PROCESO</p>
+                        <h2>Registrar salida</h2>
+                    </div>
+                </div>
+                <p class="panel-description">Al guardar, RelayHR genera automáticamente las tareas para cada área.</p>
+
+                <form id="exit-form" class="exit-form">
+                    <div class="field-group">
+                        <label for="employee-id">ID del empleado</label>
+                        <input id="employee-id" name="employeeId" type="number" min="1" step="1" placeholder="Ej. 105" required />
+                        <span class="field-hint">Identificador existente en el sistema.</span>
+                    </div>
+                    <div class="field-group">
+                        <label for="effective-date">Fecha efectiva de salida</label>
+                        <input id="effective-date" name="effectiveDate" type="date" required />
+                        <span class="field-hint">La fecha debe ser hoy o posterior.</span>
+                    </div>
+                    <button class="button button-primary create-button" type="submit">
+                        <span>Registrar salida</span><span aria-hidden="true">→</span>
+                    </button>
+                </form>
+                <div id="exit-message" class="notice" role="status" aria-live="polite" hidden></div>
+            </section>
+
+            <section id="checklist-panel" class="panel checklist-panel" aria-live="polite">
+                <div class="checklist-empty">
+                    <div class="empty-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M8 5h11v15H5V5h3Zm0 0V3h8v2M8 10h8M8 14h8M8 18h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="eyebrow">CHECKLIST DE SALIDA</p>
+                        <h2>Consulta un proceso</h2>
+                        <p>Registra una salida para ver su checklist o consulta uno existente por su identificador.</p>
+                    </div>
+                </div>
+                <form id="lookup-form" class="lookup-form">
+                    <label for="exit-lookup-id">ID de salida</label>
+                    <input id="exit-lookup-id" name="employeeExitId" type="number" min="1" step="1" placeholder="Ej. 101" required />
+                    <button class="button button-secondary" type="submit">Consultar checklist</button>
+                </form>
+                <div id="checklist-message" class="notice" role="status" aria-live="polite" hidden></div>
+                <div id="checklist-result"></div>
+            </section>
+        </div>
+
+        <aside class="side-column">
+            <section class="workflow-card">
+                <div class="workflow-top">
+                    <span class="workflow-label">FLUJO AUTOMÁTICO</span>
+                    <span class="workflow-spark" aria-hidden="true">✦</span>
+                </div>
+                <h2>Seis tareas.<br />Tres equipos.<br />Un solo lugar.</h2>
+                <p>El checklist se prepara en el mismo registro y queda disponible al instante.</p>
+                <div class="workflow-rule"></div>
+                <div class="workflow-stat"><span>Áreas coordinadas</span><strong>03</strong></div>
+                <div class="workflow-stat"><span>Tareas por proceso</span><strong>06</strong></div>
+            </section>
+
+            <section class="departments-card">
+                <p class="eyebrow">EQUIPOS INVOLUCRADOS</p>
+                <div class="department-row">
+                    <span class="department-symbol symbol-tech">T</span>
+                    <span><strong>Tecnología</strong><small>Accesos y equipos</small></span>
+                    <span class="row-arrow" aria-hidden="true">↗</span>
+                </div>
+                <div class="department-row">
+                    <span class="department-symbol symbol-people">R</span>
+                    <span><strong>Recursos Humanos</strong><small>Documentación y salida</small></span>
+                    <span class="row-arrow" aria-hidden="true">↗</span>
+                </div>
+                <div class="department-row">
+                    <span class="department-symbol symbol-finance">F</span>
+                    <span><strong>Finanzas</strong><small>Liquidación y obligaciones</small></span>
+                    <span class="row-arrow" aria-hidden="true">↗</span>
+                </div>
+            </section>
+        </aside>
+    </section>
+}

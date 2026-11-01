@@ -1,0 +1,22 @@
+@baseUrl = https://localhost:7091
+
+### Inicia sesión con la cuenta inicial configurada en secretos de entorno.
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "replace-with-local-secret"
+}
+
+### Registra la salida de un empleado existente.
+POST {{baseUrl}}/api/employee-exits
+Content-Type: application/json
+
+{
+  "employeeId": 15,
+  "effectiveDate": "2026-11-15"
+}
+
+### Consulta las tareas generadas para una salida.
+GET {{baseUrl}}/api/employee-exits/1/checklist
