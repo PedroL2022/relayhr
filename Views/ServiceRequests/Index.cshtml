@@ -1,0 +1,53 @@
+@model List<ServiceRequest>
+@{
+    ViewData["Title"] = "Mis solicitudes";
+}
+
+<h1 class="h3 mb-3">Mis solicitudes de servicio</h1>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">
+        Todavía no has enviado solicitudes. <a asp-controller="Directory" asp-action="Index">Busca talento interino</a>.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr><th>Profesional</th><th>Categoría</th><th>Tarifa</th><th>Enviada</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody>
+            @foreach (var request in Model)
+            {
+                <tr>
+                    <td><a asp-controller="Directory" asp-action="Details" asp-route-id="@request.FreelancerProfileId">@request.FreelancerProfile.User.FullName</a></td>
+                    <td>@request.FreelancerProfile.Category</td>
+                    <td>@request.FreelancerProfile.HourlyRate.Money()</td>
+                    <td>@request.CreatedAt.Local()</td>
+                    <td>
+                        <span class="badge @request.Status.ToBadge()">@request.Status.ToText()</span>
+                        @if (request.RespondedAt.HasValue)
+                        {
+                            <div class="small text-muted">Respondió el @request.RespondedAt.Local()</div>
+                        }
+                        @if (request.ConfirmedAt.HasValue)
+                        {
+                            <div class="small text-muted">Confirmada el @request.ConfirmedAt.Local()</div>
+                        }
+                    </td>
+                    <td class="text-end">
+                        @if (request.Status == ServiceRequestStatus.Accepted)
+                        {
+                            <form asp-action="Confirm" asp-route-id="@request.ServiceRequestId" method="post">
+                                <button type="submit" class="btn btn-sm btn-success">Confirmar servicio</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

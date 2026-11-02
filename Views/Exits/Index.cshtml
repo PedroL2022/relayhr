@@ -1,0 +1,43 @@
+@model List<EmployeeExit>
+@{
+    ViewData["Title"] = "Salidas";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Salidas de empleados</h1>
+    <a class="btn btn-primary" asp-action="Create">Registrar salida</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">Todavía no hay salidas registradas.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Empleado</th><th>Fecha de salida</th><th>Estado</th><th style="min-width:180px">Avance del checklist</th><th>Obligatorias pendientes</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var exit in Model)
+            {
+                <tr>
+                    <td>@exit.Employee.FullName</td>
+                    <td>@exit.ExitDate.Short()</td>
+                    <td><span class="badge @exit.Status.ToBadge()">@exit.Status.ToText()</span></td>
+                    <td>
+                        <div class="progress" role="progressbar" aria-valuenow="@exit.ProgressPercent" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar" style="width: @(exit.ProgressPercent)%">@exit.ProgressPercent %</div>
+                        </div>
+                    </td>
+                    <td>@exit.GetPendingMandatoryTasks().Count</td>
+                    <td class="text-end"><a asp-action="Details" asp-route-id="@exit.EmployeeExitId">Abrir</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,108 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Inicio";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+}
+
+@if (!isAuthenticated)
+{
+    <div class="p-5 mb-4 bg-light rounded-3">
+        <h1 class="display-5 fw-bold">RelayHR</h1>
+        <p class="fs-5">
+            Cuando un colaborador clave se va, la empresa no puede detenerse. RelayHR organiza su salida,
+            conserva su conocimiento, genera la vacante de reemplazo y encuentra talento temporal para cubrir la transición.
+        </p>
+        <a class="btn btn-primary btn-lg me-2" asp-controller="Account" asp-action="Login">Iniciar sesión</a>
+        <a class="btn btn-outline-primary btn-lg me-2" asp-controller="Account" asp-action="Register">Crear una cuenta</a>
+        <a class="btn btn-outline-secondary btn-lg" asp-controller="Jobs" asp-action="Index">Ver ofertas de empleo</a>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <h5 class="card-title">Empresas y RRHH</h5>
+                <p class="card-text">Checklist de salida automático, traspaso de conocimiento y Vacantes Express listas para publicar.</p>
+            </div></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <h5 class="card-title">Trabajadores independientes</h5>
+                <p class="card-text">Publica tu perfil, tus tarifas y tu disponibilidad para recibir solicitudes de servicio.</p>
+            </div></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <h5 class="card-title">Candidatos</h5>
+                <p class="card-text">Consulta las ofertas de empleo que las empresas publican, sin necesidad de registrarte.</p>
+            </div></div>
+        </div>
+    </div>
+}
+else
+{
+    <h1 class="h3 mb-4">Hola, @User.Identity!.Name</h1>
+
+    <div class="row g-3">
+        @if (User.IsInRole(Roles.HRAdmin))
+        {
+            <div class="col-md-4">
+                <div class="card h-100"><div class="card-body">
+                    <h5 class="card-title">Salidas en proceso</h5>
+                    <p class="display-6">@Model.ExitsInProgress</p>
+                    <a asp-controller="Exits" asp-action="Index">Ver salidas</a> ·
+                    <a asp-controller="Exits" asp-action="Create">Registrar salida</a>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100"><div class="card-body">
+                    <h5 class="card-title">Tareas sin responsable temporal</h5>
+                    <p class="display-6">@Model.UnassignedItems</p>
+                    <span class="text-muted">Del traspaso de conocimiento.</span>
+                </div></div>
+            </div>
+        }
+        @if (User.IsInRole(Roles.HRAdmin) || User.IsInRole(Roles.Recruiter))
+        {
+            <div class="col-md-4">
+                <div class="card h-100"><div class="card-body">
+                    <h5 class="card-title">Vacantes por publicar</h5>
+                    <p class="display-6">@Model.VacanciesToPublish</p>
+                    <a asp-controller="Vacancies" asp-action="Index" asp-route-status="PendingReview">Ver bandeja</a>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100"><div class="card-body">
+                    <h5 class="card-title">Solicitudes de servicio activas</h5>
+                    <p class="display-6">@Model.ActiveRequests</p>
+                    <a asp-controller="ServiceRequests" asp-action="Index">Ver solicitudes</a> ·
+                    <a asp-controller="Directory" asp-action="Index">Buscar talento</a>
+                </div></div>
+            </div>
+        }
+        @if (User.IsInRole(Roles.Freelancer))
+        {
+            <div class="col-md-6">
+                <div class="card h-100"><div class="card-body">
+                    <h5 class="card-title">Mi perfil</h5>
+                    @if (Model.FreelancerHasProfile)
+                    {
+                        <p>Tu perfil está publicado en el directorio.</p>
+                        <a asp-controller="Freelancer" asp-action="Profile">Editar perfil</a>
+                    }
+                    else
+                    {
+                        <p>Todavía no tienes perfil, así que las empresas no pueden encontrarte.</p>
+                        <a class="btn btn-primary" asp-controller="Freelancer" asp-action="Profile">Crear mi perfil</a>
+                    }
+                </div></div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100"><div class="card-body">
+                    <h5 class="card-title">Solicitudes por responder</h5>
+                    <p class="display-6">@Model.IncomingRequests</p>
+                    <a asp-controller="Freelancer" asp-action="Requests">Ver solicitudes</a>
+                </div></div>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,40 @@
+@model AssigneeViewModel
+@{
+    ViewData["Title"] = "Responsabilidades temporales";
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-1">Responsabilidades temporales</h1>
+        <div class="text-muted">@Model.Employee.FullName</div>
+    </div>
+    <a asp-controller="Employees" asp-action="Index">&larr; Volver a empleados</a>
+</div>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info">Este empleado no tiene responsabilidades temporales asignadas.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr><th>Proyecto o tarea</th><th>Descripción</th><th>Estado actual</th><th>Viene de la salida de</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.Description</td>
+                    <td>@item.CurrentStatus</td>
+                    <td>
+                        <a asp-controller="Handover" asp-action="Index" asp-route-exitId="@item.EmployeeExitId">@item.EmployeeExit.Employee.FullName</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

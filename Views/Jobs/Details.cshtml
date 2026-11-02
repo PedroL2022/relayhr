@@ -1,0 +1,15 @@
+@model ExpressVacancy
+@{
+    ViewData["Title"] = Model.JobTitle;
+}
+
+<a asp-action="Index">&larr; Volver a las ofertas</a>
+
+<h1 class="h3 mt-3">@Model.JobTitle</h1>
+<p class="text-muted">@(Model.Department?.Name) · Publicada el @Model.PublishedAt.Local()</p>
+
+<h2 class="h5">Descripción</h2>
+<p style="white-space: pre-line">@Model.JobDescription</p>
+
+<h2 class="h5">Requisitos</h2>
+<p style="white-space: pre-line">@Model.Requirements</p>

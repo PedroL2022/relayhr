@@ -1,0 +1,154 @@
+@model EmployeeExit
+@{
+    ViewData["Title"] = "Salida de " + Model.Employee.FullName;
+    var today = DateOnly.FromDateTime(DateTime.Today);
+    var pending = Model.GetPendingMandatoryTasks();
+    var isClosed = Model.Status == ExitStatus.Closed;
+    var unassigned = Model.KnowledgeItems.Count(k => k.IsUnassigned);
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-1">Salida de @Model.Employee.FullName</h1>
+        <span class="badge @Model.Status.ToBadge() fs-6">@Model.Status.ToText()</span>
+    </div>
+    <a asp-action="Index">&larr; Volver a salidas</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+            <h6 class="text-muted">Datos de la salida</h6>
+            <div><strong>Fecha efectiva:</strong> @Model.ExitDate.Short()</div>
+            <div><strong>Motivo:</strong> @(Model.Reason ?? "—")</div>
+            <div><strong>Registrada por:</strong> @Model.RegisteredBy</div>
+            <div><strong>Registrada el:</strong> @Model.CreatedAt.Local()</div>
+            @if (isClosed)
+            {
+                <div><strong>Cerrada por:</strong> @Model.ClosedBy el @Model.ClosedAt.Local()</div>
+            }
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+            <h6 class="text-muted">Control del cierre</h6>
+            <div class="progress mb-2" role="progressbar" aria-valuenow="@Model.ProgressPercent" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" style="width: @(Model.ProgressPercent)%">@Model.ProgressPercent %</div>
+            </div>
+            <div>
+                Equipos devueltos:
+                @if (Model.IsKindCompleted(ExitTaskKind.EquipmentReturn)) { <span class="badge bg-success">Sí</span> }
+                else { <span class="badge bg-secondary">Pendiente</span> }
+            </div>
+            <div>
+                Accesos revocados:
+                @if (Model.IsKindCompleted(ExitTaskKind.AccessRevocation)) { <span class="badge bg-success">Sí</span> }
+                else { <span class="badge bg-secondary">Pendiente</span> }
+            </div>
+            <div>Obligatorias pendientes: <strong>@pending.Count</strong></div>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+            <h6 class="text-muted">Siguientes pasos</h6>
+            <div class="mb-2">
+                <a asp-controller="Handover" asp-action="Index" asp-route-exitId="@Model.EmployeeExitId">Traspaso de conocimiento</a>
+                (@Model.KnowledgeItems.Count elemento(s)@(unassigned > 0 ? $", {unassigned} sin asignar" : ""))
+            </div>
+            @if (Model.ExpressVacancy is not null)
+            {
+                <div class="mb-2">
+                    <a asp-controller="Vacancies" asp-action="Edit" asp-route-id="@Model.ExpressVacancy.ExpressVacancyId">Vacante Express de reemplazo</a>
+                    <span class="badge @Model.ExpressVacancy.Status.ToBadge()">@Model.ExpressVacancy.Status.ToText()</span>
+                </div>
+            }
+            @if (!isClosed)
+            {
+                <form asp-action="Close" asp-route-id="@Model.EmployeeExitId" method="post"
+                      onsubmit="return confirm('¿Cerrar el proceso de salida?');">
+                    <button type="submit" class="btn btn-success">Cerrar la salida</button>
+                </form>
+                <div class="form-text">Solo se puede cerrar cuando todas las tareas obligatorias estén completas.</div>
+            }
+        </div></div>
+    </div>
+</div>
+
+<h2 class="h4">Checklist de salida</h2>
+
+@foreach (var area in Model.Tasks.OrderBy(t => t.ExitTaskId).GroupBy(t => t.Area).OrderBy(g => g.Key))
+{
+    <h3 class="h6 text-uppercase text-muted mt-4">@area.Key.ToText()</h3>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Tarea</th><th>Responsable</th><th>Fecha límite</th><th>Estado</th><th style="min-width:260px">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var task in area)
+            {
+                <tr>
+                    <td>
+                        @task.Title
+                        @if (task.IsMandatory) { <span class="badge bg-danger ms-1">Obligatoria</span> }
+                        else { <span class="badge bg-light text-dark border ms-1">Opcional</span> }
+                    </td>
+                    <td>@task.ResponsibleName</td>
+                    <td>
+                        @task.DueDate.Short()
+                        @if (task.IsOverdue(today)) { <span class="badge bg-danger">Vencida</span> }
+                    </td>
+                    <td>
+                        <span class="badge @task.Status.ToBadge()">@task.Status.ToText()</span>
+                        @if (task.Status == ExitTaskStatus.Completed)
+                        {
+                            <div class="small text-muted">@task.CompletedBy · @task.CompletedAt.Local()</div>
+                        }
+                    </td>
+                    <td>
+                        @if (!isClosed)
+                        {
+                            @if (task.Status != ExitTaskStatus.Completed && task.Kind != ExitTaskKind.General)
+                            {
+                                <form asp-action="SetTaskStatus" method="post" class="mb-1">
+                                    <input type="hidden" name="exitId" value="@Model.EmployeeExitId" />
+                                    <input type="hidden" name="taskId" value="@task.ExitTaskId" />
+                                    <input type="hidden" name="status" value="@ExitTaskStatus.Completed" />
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        @(task.Kind == ExitTaskKind.EquipmentReturn ? "Registrar devolución de equipos" : "Confirmar revocación de accesos")
+                                    </button>
+                                </form>
+                            }
+                            <form asp-action="SetTaskStatus" method="post" class="d-flex gap-1">
+                                <input type="hidden" name="exitId" value="@Model.EmployeeExitId" />
+                                <input type="hidden" name="taskId" value="@task.ExitTaskId" />
+                                <select name="status" class="form-select form-select-sm" aria-label="Estado de la tarea">
+                                    @foreach (var status in Enum.GetValues<ExitTaskStatus>())
+                                    {
+                                        <option value="@status" selected="@(status == task.Status)">@status.ToText()</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
+                            </form>
+                            <details class="mt-1">
+                                <summary class="small">Cambiar responsable o fecha</summary>
+                                <form asp-action="UpdateTask" method="post" class="d-flex flex-column gap-1 mt-1">
+                                    <input type="hidden" name="exitId" value="@Model.EmployeeExitId" />
+                                    <input type="hidden" name="taskId" value="@task.ExitTaskId" />
+                                    <input type="text" name="responsibleName" value="@task.ResponsibleName" maxlength="150"
+                                           class="form-control form-control-sm" aria-label="Responsable" required />
+                                    <input type="date" name="dueDate" value="@task.DueDate.ToString("yyyy-MM-dd")"
+                                           class="form-control form-control-sm" aria-label="Fecha límite" required />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Actualizar</button>
+                                </form>
+                            </details>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

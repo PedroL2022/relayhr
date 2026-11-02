@@ -1,0 +1,56 @@
+@model FreelancerProfile
+@{
+    ViewData["Title"] = Model.User.FullName;
+    bool hasActiveRequest = ViewBag.HasActiveRequest == true;
+}
+
+<a asp-action="Index">&larr; Volver al directorio</a>
+
+<div class="d-flex justify-content-between align-items-start mt-3 mb-3">
+    <div>
+        <h1 class="h3 mb-1">@Model.User.FullName</h1>
+        <div class="text-muted">@Model.Category</div>
+    </div>
+    <div>
+        @if (Model.IsAvailable) { <span class="badge bg-success fs-6">Disponible</span> }
+        else { <span class="badge bg-secondary fs-6">No disponible</span> }
+    </div>
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Experiencia</dt>
+    <dd class="col-sm-9">@Model.ExperienceYears año(s)</dd>
+
+    <dt class="col-sm-3">Resumen</dt>
+    <dd class="col-sm-9" style="white-space: pre-line">@Model.ExperienceSummary</dd>
+
+    <dt class="col-sm-3">Portafolio</dt>
+    <dd class="col-sm-9">
+        @if (string.IsNullOrWhiteSpace(Model.PortfolioUrl)) { <span>—</span> }
+        else { <a href="@Model.PortfolioUrl" target="_blank" rel="noopener noreferrer">@Model.PortfolioUrl</a> }
+    </dd>
+
+    <dt class="col-sm-3">Tarifa</dt>
+    <dd class="col-sm-9">@Model.HourlyRate.Money() por hora</dd>
+
+    <dt class="col-sm-3">Disponibilidad</dt>
+    <dd class="col-sm-9">@(Model.AvailabilityNote ?? (Model.IsAvailable ? "Disponible" : "No disponible"))</dd>
+</dl>
+
+@if (hasActiveRequest)
+{
+    <div class="alert alert-info">
+        Ya tienes una solicitud en curso con este profesional. <a asp-controller="ServiceRequests" asp-action="Index">Ver mis solicitudes</a>.
+    </div>
+}
+else if (Model.IsAvailable)
+{
+    <form asp-controller="ServiceRequests" asp-action="Create" method="post">
+        <input type="hidden" name="freelancerProfileId" value="@Model.FreelancerProfileId" />
+        <button type="submit" class="btn btn-primary btn-lg">Solicitar servicio</button>
+    </form>
+    <div class="form-text mt-2">
+        Se enviará con los datos de tu empresa. RelayHR solo registra la solicitud y su confirmación:
+        no procesa pagos ni genera contratos.
+    </div>
+}

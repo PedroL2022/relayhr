@@ -1,0 +1,111 @@
+@model HandoverViewModel
+@{
+    ViewData["Title"] = "Traspaso de conocimiento";
+    var isClosed = Model.Exit.Status == ExitStatus.Closed;
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-1">Traspaso de conocimiento</h1>
+        <div class="text-muted">Salida de @Model.Exit.Employee.FullName · @Model.Exit.ExitDate.Short()</div>
+    </div>
+    <a asp-controller="Exits" asp-action="Details" asp-route-id="@Model.Exit.EmployeeExitId">&larr; Volver a la salida</a>
+</div>
+
+<p class="text-muted">
+    Documenta los proyectos y tareas pendientes del empleado y asígnalos a un responsable temporal
+    para que las operaciones continúen sin interrupción.
+</p>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info">Todavía no se ha documentado nada.</div>
+}
+else
+{
+    <div class="table-responsive mb-4">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr><th>Proyecto o tarea</th><th>Descripción</th><th>Estado actual</th><th>Responsable temporal</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.Description</td>
+                    <td>@item.CurrentStatus</td>
+                    <td style="min-width:260px">
+                        @if (item.IsUnassigned)
+                        {
+                            <span class="badge bg-warning text-dark mb-1">Sin asignar</span>
+                        }
+                        else
+                        {
+                            <div class="mb-1">@item.AssignedTo!.FullName</div>
+                        }
+
+                        @if (!isClosed)
+                        {
+                            <form asp-action="Assign" method="post" class="d-flex gap-1">
+                                <input type="hidden" name="exitId" value="@Model.Exit.EmployeeExitId" />
+                                <input type="hidden" name="itemId" value="@item.KnowledgeItemId" />
+                                <select name="employeeId" class="form-select form-select-sm" aria-label="Responsable temporal">
+                                    <option value="">-- Sin asignar --</option>
+                                    @foreach (var employee in Model.Employees)
+                                    {
+                                        <option value="@employee.Value" selected="@(employee.Value == item.AssignedToEmployeeId?.ToString())">@employee.Text</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Asignar</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (!isClosed)
+{
+    <h2 class="h5">Documentar un proyecto o tarea pendiente</h2>
+
+    <form asp-action="Add" method="post" class="col-md-8">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="Form.ExitId" />
+
+        <div class="mb-3">
+            <label asp-for="Form.Title" class="form-label"></label>
+            <input asp-for="Form.Title" class="form-control" />
+            <span asp-validation-for="Form.Title" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Form.Description" class="form-label"></label>
+            <textarea asp-for="Form.Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Form.Description" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Form.CurrentStatus" class="form-label"></label>
+            <input asp-for="Form.CurrentStatus" class="form-control" placeholder="Por ejemplo: en desarrollo, 60 % avanzado" />
+            <span asp-validation-for="Form.CurrentStatus" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Form.AssignedToEmployeeId" class="form-label"></label>
+            <select asp-for="Form.AssignedToEmployeeId" asp-items="Model.Employees" class="form-select">
+                <option value="">-- Sin asignar por ahora --</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+}
+else
+{
+    <div class="alert alert-secondary">La salida está cerrada: ya no se puede modificar el traspaso.</div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

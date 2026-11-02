@@ -1,0 +1,49 @@
+@model ExitFormViewModel
+@{
+    ViewData["Title"] = "Registrar salida";
+}
+
+<h1 class="h3 mb-3">Registrar salida de un empleado</h1>
+
+<p class="text-muted">
+    Al guardar, el sistema genera automáticamente el checklist de salida por departamento
+    (Tecnología, Recursos Humanos y Finanzas) y la Vacante Express de reemplazo.
+</p>
+
+@if (Model.Employees.Count == 0)
+{
+    <div class="alert alert-warning">
+        No hay empleados activos. <a asp-controller="Employees" asp-action="Create">Registra un empleado</a> primero.
+    </div>
+}
+else
+{
+    <form asp-action="Create" method="post" class="col-md-6">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="mb-3">
+            <label asp-for="EmployeeId" class="form-label"></label>
+            <select asp-for="EmployeeId" asp-items="Model.Employees" class="form-select">
+                <option value="">-- Selecciona --</option>
+            </select>
+            <span asp-validation-for="EmployeeId" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="ExitDate" class="form-label"></label>
+            <input asp-for="ExitDate" type="date" class="form-control" />
+            <span asp-validation-for="ExitDate" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Reason" class="form-label"></label>
+            <textarea asp-for="Reason" class="form-control" rows="2"></textarea>
+            <span asp-validation-for="Reason" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Registrar salida</button>
+        <a class="btn btn-link" asp-action="Index">Cancelar</a>
+    </form>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

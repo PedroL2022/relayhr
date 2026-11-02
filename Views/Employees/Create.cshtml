@@ -1,0 +1,35 @@
+@model EmployeeFormViewModel
+@{
+    ViewData["Title"] = "Nuevo empleado";
+}
+
+<h1 class="h3 mb-3">Nuevo empleado</h1>
+
+<form asp-action="Create" method="post" class="col-md-6">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="FullName" class="form-label"></label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="PositionId" class="form-label"></label>
+        <select asp-for="PositionId" asp-items="Model.Positions" class="form-select">
+            <option value="">-- Sin puesto --</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="DepartmentId" class="form-label"></label>
+        <select asp-for="DepartmentId" asp-items="Model.Departments" class="form-select">
+            <option value="">-- Sin departamento --</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a class="btn btn-link" asp-action="Index">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
