@@ -1,0 +1,47 @@
+@model List<Employee>
+@{
+    ViewData["Title"] = "Empleados";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Empleados</h1>
+    <a class="btn btn-primary" asp-action="Create">Nuevo empleado</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">Todavía no hay empleados registrados.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr><th>Nombre</th><th>Puesto</th><th>Departamento</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody>
+            @foreach (var employee in Model)
+            {
+                <tr>
+                    <td>@employee.FullName</td>
+                    <td>@(employee.Position?.Title ?? "—")</td>
+                    <td>@(employee.Department?.Name ?? "—")</td>
+                    <td>
+                        @if (employee.IsActive)
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Con salida registrada</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a asp-controller="Handover" asp-action="ByAssignee" asp-route-employeeId="@employee.EmployeeId">Responsabilidades temporales</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

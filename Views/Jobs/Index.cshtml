@@ -1,0 +1,30 @@
+@model List<ExpressVacancy>
+@{
+    ViewData["Title"] = "Ofertas de empleo";
+}
+
+<h1 class="h3 mb-3">Ofertas de empleo</h1>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">Por ahora no hay ofertas publicadas. Vuelve pronto.</div>
+}
+else
+{
+    <div class="row g-3">
+    @foreach (var vacancy in Model)
+    {
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@vacancy.JobTitle</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">@(vacancy.Department?.Name)</h6>
+                    <p class="card-text">@vacancy.JobDescription</p>
+                    <a asp-action="Details" asp-route-id="@vacancy.ExpressVacancyId">Ver detalle</a>
+                </div>
+                <div class="card-footer text-muted small">Publicada el @vacancy.PublishedAt.Local()</div>
+            </div>
+        </div>
+    }
+    </div>
+}

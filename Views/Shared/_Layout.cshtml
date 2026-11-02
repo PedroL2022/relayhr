@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RelayHR</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/RelayHR.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
+            <div class="container">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">RelayHR</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Mostrar menú">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto">
+                        @if (User.IsInRole(Roles.HRAdmin))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Exits" asp-action="Index">Salidas</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Employees" asp-action="Index">Empleados</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Positions" asp-action="Index">Puestos</a></li>
+                        }
+                        @if (User.IsInRole(Roles.HRAdmin) || User.IsInRole(Roles.Recruiter))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Vacancies" asp-action="Index">Vacantes Express</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Directory" asp-action="Index">Talento interino</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="ServiceRequests" asp-action="Index">Mis solicitudes</a></li>
+                        }
+                        @if (User.IsInRole(Roles.Freelancer))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Freelancer" asp-action="Profile">Mi perfil</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Freelancer" asp-action="Requests">Solicitudes recibidas</a></li>
+                        }
+                        <li class="nav-item"><a class="nav-link" asp-controller="Jobs" asp-action="Index">Ofertas de empleo</a></li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item d-flex align-items-center text-white me-3">
+                                <span>@User.Identity!.Name</span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-light btn-sm">Cerrar sesión</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Iniciar sesión</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Register">Registrarse</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-4">
+            @if (TempData["Success"] is string success)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @success
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            }
+            @if (TempData["Error"] is string error)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @error
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            }
+
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 RelayHR · ITLA · Programación III
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

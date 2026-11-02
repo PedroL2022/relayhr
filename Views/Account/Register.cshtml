@@ -1,0 +1,67 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Crear cuenta";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="h3 mb-3">Crear cuenta</h1>
+
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Role" class="form-label"></label>
+                <select asp-for="Role" class="form-select" id="roleSelect">
+                    <option value="">-- Selecciona --</option>
+                    <option value="@Roles.HRAdmin">@Roles.DisplayName(Roles.HRAdmin)</option>
+                    <option value="@Roles.Recruiter">@Roles.DisplayName(Roles.Recruiter)</option>
+                    <option value="@Roles.Freelancer">@Roles.DisplayName(Roles.Freelancer)</option>
+                </select>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            <div class="mb-3" id="companyGroup">
+                <label asp-for="CompanyName" class="form-label"></label>
+                <input asp-for="CompanyName" class="form-control" />
+                <span asp-validation-for="CompanyName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" autocomplete="username" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Crear cuenta</button>
+        </form>
+
+        <p class="mt-3">¿Ya tienes cuenta? <a asp-action="Login">Inicia sesión</a></p>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // El nombre de la empresa solo aplica a las cuentas de empresa (RRHH y reclutador).
+        const roleSelect = document.getElementById('roleSelect');
+        const companyGroup = document.getElementById('companyGroup');
+        function toggleCompany() {
+            companyGroup.style.display = roleSelect.value === 'Freelancer' ? 'none' : '';
+        }
+        roleSelect.addEventListener('change', toggleCompany);
+        toggleCompany();
+    </script>
+}

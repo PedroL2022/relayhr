@@ -1,0 +1,65 @@
+@model DirectoryViewModel
+@{
+    ViewData["Title"] = "Talento interino";
+}
+
+<h1 class="h3 mb-3">Directorio de talento interino</h1>
+
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-md-4">
+        <label asp-for="Category" class="form-label"></label>
+        <select asp-for="Category" class="form-select">
+            <option value="">Todas las categorías</option>
+            @foreach (var category in FreelancerCategories.All)
+            {
+                <option value="@category">@category</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="MaxHourlyRate" class="form-label"></label>
+        <input asp-for="MaxHourlyRate" type="number" min="0" step="0.01" class="form-control" />
+        <span asp-validation-for="MaxHourlyRate" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <div class="form-check mb-2">
+            <input asp-for="OnlyAvailable" class="form-check-input" />
+            <label asp-for="OnlyAvailable" class="form-check-label"></label>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Buscar</button>
+    </div>
+</form>
+
+@if (Model.Results.Count == 0)
+{
+    <div class="alert alert-info">Sin resultados. Prueba con otros filtros.</div>
+}
+else
+{
+    <div class="row g-3">
+    @foreach (var profile in Model.Results)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@profile.User.FullName</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">@profile.Category</h6>
+                    <p class="mb-1">@profile.ExperienceYears año(s) de experiencia</p>
+                    <p class="mb-2"><strong>@profile.HourlyRate.Money()</strong> por hora</p>
+                    @if (profile.IsAvailable) { <span class="badge bg-success">Disponible</span> }
+                    else { <span class="badge bg-secondary">No disponible</span> }
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Details" asp-route-id="@profile.FreelancerProfileId">Ver perfil</a>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
