@@ -1,7 +1,10 @@
+using RelayHR.Web.Services.KnowledgeTransfer;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddKnowledgeTransferModule(builder.Configuration);
 
 var app = builder.Build();
 
